@@ -1,0 +1,29 @@
+{
+  "name": "project-cms-backend",
+  "version": "1.0.0",
+  "description": "A Hosted backend for project-cms",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Jason Kraus",
+  "license": "Proprietary",
+  "dependencies": {
+    "bcryptjs": "^2.3.0",
+    "body-parser": "^1.15.2",
+    "connect-flash": "^0.1.1",
+    "cookie-parser": "^1.4.3",
+    "cookie-session": "^2.0.0-alpha.1",
+    "express": "^4.14.0",
+    "jsonwebtoken": "^7.1.9",
+    "lodash": "^4.15.0",
+    "nunjucks": "^2.4.2",
+    "passport": "^0.3.2",
+    "passport-local": "^1.0.0",
+    "querystring": "^0.2.0",
+    "restify": "^4.1.1",
+    "rethinkdb": "^2.3.2",
+    "slug": "^0.9.1",
+    "stripe": "^4.9.1"
+  }
+}
