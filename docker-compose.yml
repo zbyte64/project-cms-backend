@@ -1,0 +1,11 @@
+version: '2'
+services:
+  app:
+    build: .
+    volumes:
+      - "./:/opt/app"
+    ports:
+      - 8000
+    environment:
+      IS_DOCKER: 'TRUE'
+      PORT: 8000
