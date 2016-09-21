@@ -2,12 +2,8 @@ var restify = require('restify');
 var uuid5 = require("uuid5");
 var uuid = require("uuid");
 var _ = require('lodash');
-//TODO process.env configurable
-var r = require('rethinkdbdash')({
-  port: 29015,
-  host: 'rethinkdb',
-});
 
+var {r} = require('./connections');
 var {authorize} = require('./auth/middleware');
 
 

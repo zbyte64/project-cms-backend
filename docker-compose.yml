@@ -6,6 +6,10 @@ services:
       - "./:/opt/app"
     ports:
       - 8000
+    links:
+      - rethinkdb
     environment:
       IS_DOCKER: 'TRUE'
       PORT: 8000
+  rethinkdb:
+    image: rethinkdb

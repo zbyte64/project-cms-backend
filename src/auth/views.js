@@ -2,13 +2,12 @@ var _ = require('lodash');
 var flash = require('connect-flash');
 var restify = require('restify');
 
-var {doHash, slugify} = require('../util');
+var {doHash} = require('../util');
 var {passport} = require('./common');
 var {authorize, signedUsername} = require('./middleware');
 var {getUser, createUser, generateResetUrl, updateUser} = require('../models');
 var {sendMail, emitEvent} = require('../integrations');
 var {formatHTML} = require('../html_formatter');
-//var {localeMiddleware, i18n} = require('../languages');
 
 
 var auth = restify.createServer({

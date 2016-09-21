@@ -2,7 +2,6 @@ var _ = require('lodash');
 var bcrypt = require('bcryptjs');
 var querystring = require('querystring');
 var jwt = require('jsonwebtoken');
-var slug = require('slug');
 
 
 //bcrypt hasher that returns a promise
@@ -20,11 +19,6 @@ function doHash(password) {
 }
 exports.doHash = doHash;
 
-function slugify(text){
-  console.warn("Use slug module instead")
-  return slug(text)
-}
-exports.slugify = slugify;
 
 function makeid(length=3) {
     var text = "";

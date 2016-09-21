@@ -1,21 +1,20 @@
-var r = require('rethinkdb');
-var {runQuery, ServerUrl} = require('./connections');
+var {r, ServerUrl} = require('./connections');
 var {sendMail} = require('./integrations');
 var {signedParams} = require('./util');
 
 
 function getUser(username) {
-  return runQuery(r.table('users').filter(r.row('username').eq(username)));
+  return r.table('users').filter(r.row('username').eq(username)).run();
 }
 exports.getUser = getUser;
 
 function getUserById(user_id) {
-  return runQuery(r.table('users').get(user_id));
+  return r.table('users').get(user_id).run();
 }
 exports.getUserById = getUserById;
 
 function createUser(userDoc) {
-  return runQuery(r.table('users').insert([userDoc])).then(response => {
+  return r.table('users').insert([userDoc]).run().then(response => {
     sendMail({
       email: userDoc.email,
       action: 'newUser',
@@ -28,7 +27,7 @@ function createUser(userDoc) {
 exports.createUser = createUser;
 
 function updateUser(user_id, userDoc) {
-  return runQuery(r.table('users').get(user_id).update(userDoc));
+  return r.table('users').get(user_id).update(userDoc).run();
 }
 exports.updateUser = updateUser;
 
