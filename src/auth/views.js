@@ -20,9 +20,6 @@ exports.auth = auth;
 
 auth.use(authorize);
 auth.use(flash());
-//do we want locale based url or vary with language?
-//auth.use(localeMiddleware);
-//auth.use(i18n.init);
 auth.use(noCache);
 
 function noCache(req, res, next) {

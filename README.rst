@@ -8,3 +8,12 @@ Urls:
 * **/auth**
 * **/billing**
 * **/datastore**
+
+
+Environment Variables:
+
+* **STRIPE_TOKEN**
+* **STRIPE_PLAN**
+* **STRIPE_API_KEY**
+* **SERVER_URL**
+* **SECRET**

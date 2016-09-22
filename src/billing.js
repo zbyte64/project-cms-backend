@@ -4,10 +4,10 @@ var {emitEvent} = require('./integrations');
 
 
 var stripePlan = process.env.STRIPE_PLAN;
-var stripePrice = process.env.STRIPE_PRICE;
+//var stripePrice = process.env.STRIPE_PRICE;
 
 
-function charge(req, res) {
+function charge(req, res, next) {
   var stripeToken = req.data.stripeToken;
   console.log("charge", stripeToken);
   if (!stripeToken) {
@@ -41,7 +41,7 @@ function charge(req, res) {
       var id = customer.id;
       console.log('Success! Customer with Stripe ID ' + id + ' just signed up!');
       emitEvent("stripe-success", {email, customerId: id});
-      //TODO do business
+      next()
     }
   });
 }

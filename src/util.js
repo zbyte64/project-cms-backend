@@ -20,17 +20,6 @@ function doHash(password) {
 exports.doHash = doHash;
 
 
-function makeid(length=3) {
-    var text = "";
-    var possible = "abcdefghijklmnopqrstuvwxyz0123456789";
-
-    for( var i=0; i < length; i++ )
-        text += possible.charAt(Math.floor(Math.random() * possible.length));
-
-    return text;
-}
-exports.makeid = makeid;
-
 var DEFAULT_EXPIRATION = 60*24*3; //3 Days
 function signedParams(params, expiresIn=DEFAULT_EXPIRATION, secret=process.env.SECRET) {
   console.log("generating hash of:", params);
