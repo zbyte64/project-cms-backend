@@ -1,13 +1,21 @@
 var _ = require('lodash');
+var express = require('express');
+
+
 var {stripeClient} = require('./connections');
 var {emitEvent} = require('./integrations');
+var {authorize} = require('./auth/middleware');
+var {createUser, updateUser} = require('./models');
 
 
 var stripePlan = process.env.STRIPE_PLAN;
 //var stripePrice = process.env.STRIPE_PRICE;
 
+var billing = express();
+exports.billing = billing;
+billing.use(authorize);
 
-function charge(req, res, next) {
+billing.post('/plan-signup', function(req, res) {
   var stripeToken = req.data.stripeToken;
   console.log("charge", stripeToken);
   if (!stripeToken) {
@@ -38,12 +46,34 @@ function charge(req, res, next) {
         message: "Error while processing your payment: " + msg
       });
     } else {
-      var id = customer.id;
+      let customer_id = customer.id;
       console.log('Success! Customer with Stripe ID ' + id + ' just signed up!');
       emitEvent("stripe-success", {email, customerId: id});
-      next()
+      //charge success
+      //create paid user or upgrade user
+      if (req.user) {
+        //upgrade user
+        let userDoc = req.user;
+        userDoc.customer_id = customer_id;
+        updateUser(userDoc.id, userDoc)
+        return res.status(200).json({
+          success: true,
+          message: "Your account has been upgraded."
+        })
+      } else {
+        //create paid user
+        let userDoc = {
+          username: req.body.username,
+          email: req.body.email,
+          customer_id: customer_id,
+        }
+        //CONSIDER: do we need to send a verification email if they have paid?
+        createUser(userDoc)
+        return res.status(200).json({
+          success: true,
+          message: "Please check your email to set your password."
+        })
+      }
     }
   });
 }
-
-exports.charge = charge;

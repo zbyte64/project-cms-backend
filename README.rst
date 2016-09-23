@@ -6,13 +6,12 @@ Urls:
 * **/project-cms - project-cms
 * **/site** - project-hoster/publisher
 * **/auth**
-* **/billing**
+* **/billing/plan-signup**
 * **/datastore**
 
 
 Environment Variables:
 
-* **STRIPE_TOKEN**
 * **STRIPE_PLAN**
 * **STRIPE_API_KEY**
 * **SERVER_URL**

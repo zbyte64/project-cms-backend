@@ -5,7 +5,7 @@ var restify = require('restify');
 var {doHash} = require('../util');
 var {passport} = require('./common');
 var {authorize, signedUsername} = require('./middleware');
-var {getUser, createUser, generateResetUrl, updateUser} = require('../models');
+var {getUser, createUser, generateResetUrl, generateActivateUrl, updateUser} = require('../models');
 var {sendMail, emitEvent} = require('../integrations');
 var {formatHTML} = require('../html_formatter');
 
@@ -31,7 +31,7 @@ function noCache(req, res, next) {
 
 auth.get('/self', function(req, res) {
   var info = _.omit(req.user, 'password_hash', 'customer_id');
-  info.has_paid = (req.user.customer_id || req.user.stripe_customer_id) ? true : false;
+  info.has_paid = req.user.customer_id ? true : false;
   res.send(info);
 });
 
@@ -75,9 +75,9 @@ auth.post('/signup', function(req, res) {
   //signed url for /auth/footer-activate
   sendMail({
     email: req.body.email,
-    action: 'footerSignup',
+    action: 'signup',
     properties: _.merge(params, {
-      url: generateFooterActivateUrl(params)
+      url: generateActivateUrl(params)
     }),
   });
   //display check your email
