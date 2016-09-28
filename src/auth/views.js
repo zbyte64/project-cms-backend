@@ -1,13 +1,13 @@
-var _ = require('lodash');
-var flash = require('connect-flash');
-var restify = require('restify');
+const _ = require('lodash');
+const flash = require('connect-flash');
+const restify = require('restify');
 
-var {doHash} = require('../util');
-var {passport} = require('./common');
-var {authorize, signedUsername} = require('./middleware');
-var {getUser, createUser, generateResetUrl, generateActivateUrl, updateUser} = require('../models');
-var {sendMail, emitEvent} = require('../integrations');
-var {formatHTML} = require('../html_formatter');
+const {doHash} = require('../util');
+const {passport} = require('./common');
+const {authorize, signedUsername} = require('./middleware');
+const {getUser, createUser, generateResetUrl, generateActivateUrl, updateUser} = require('../models');
+const {sendMail, emitEvent} = require('../integrations');
+const {formatHTML} = require('../html_formatter');
 
 
 var auth = restify.createServer({
@@ -42,8 +42,7 @@ auth.get('/login', function(req, res) {
 auth.post('/login',
   passport.authenticate('login',{successRedirect: '/',
                                  failureRedirect: '/auth/login',
-                                 failureFlash: true }),
-);
+                                 failureFlash: true }));
 
 auth.get('/logout', function(req, res) {
   if (req.user) {
@@ -120,7 +119,7 @@ auth.post('/forgot-password', function(req, res) {
     req.flash('error', 'Invalid Username');
     res.redirect('/auth/forgot-password');
   });
-);
+});
 
 
 

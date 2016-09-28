@@ -3,13 +3,52 @@ services:
   app:
     build: .
     volumes:
-      - "./:/opt/app"
+      - "./src:/opt/app/src"
+      - "./views:/opt/app/views"
+      - "./project-cms:/opt/app/project-cms"
     ports:
       - 8000
     links:
       - rethinkdb
+      - hoster
+      - ipfs
     environment:
       IS_DOCKER: 'TRUE'
       PORT: 8000
+      SECRET: "foo"
+      IPFS_API_URL: "http://ipfs:5001"
+  hoster:
+    build: project-hoster/hoster
+    ports:
+      - "8000"
+      - "8100"
+    links:
+      - ipfs
+    volumes:
+      - ./project-hoster/hoster/src:/opt/app/src
+    environment:
+      IPFS_API_URL: "http://ipfs:5001"
+      IPFS_GATEWAY_URL: "http://ipfs:8080"
+      LANDING_URL: "https://example.com"
+      REDIRECT_PROTOCOL: "http"
+      DOMAIN_NAME: "hosted.com"
+  cacher:
+    build: project-hoster/cacher
+    ports:
+      - "80:80"
+    links:
+      - hoster
+    environment:
+      PURGE_TOKEN: "foo"
   rethinkdb:
     image: rethinkdb
+  ipfs:
+    image: ipfs/go-ipfs
+    #build: https://github.com/ipfs/go-ipfs.git
+    ports:
+      - "4001"
+      - "4002/udp"
+      - "5001"
+      - "8080"
+    #volumes:
+    #  - ./ipfs-data:/data/ipfs

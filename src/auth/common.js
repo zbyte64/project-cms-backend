@@ -1,10 +1,10 @@
-var _ = require('lodash');
-var passport = require('passport');
-var {Strategy as LocalStrategy} = require('passport-local');
-var bcrypt = require('bcryptjs');
+const _ = require('lodash');
+const passport = require('passport');
+const LocalStrategy = require('passport-local').Strategy;
+const bcrypt = require('bcryptjs');
 
-var {getUser, getUserById} = require('../models');
-var {emitEvent} = require('../integrations');
+const {getUser, getUserById} = require('../models');
+const {emitEvent} = require('../integrations');
 
 
 //authentication strategy

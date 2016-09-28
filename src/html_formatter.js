@@ -1,4 +1,4 @@
-var nunjucks = require('nunjucks');
+const nunjucks = require('nunjucks');
 
 
 const VIEWS_DIRECTORY = __dirname + "/../views"
@@ -6,7 +6,7 @@ nunjucks.configure(VIEWS_DIRECTORY);
 
 //for use with text/html
 function formatHTML(req, res, body, cb) {
-  const view = req.path + '.html';
+  let view = req.path + '.html';
   if (body instanceof Error) //TODO 500.html
     return cb(body.stack, null);
 
@@ -15,3 +15,5 @@ function formatHTML(req, res, body, cb) {
 
   nunjucks.render(view, body, cb);
 }
+
+exports.formatHTML = formatHTML;

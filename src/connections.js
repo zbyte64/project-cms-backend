@@ -3,7 +3,7 @@ const _ = require('lodash')
 
 //TODO process.env configurable
 const r = require('rethinkdbdash')({
-  port: 29015,
+  port: 28015,
   host: 'rethinkdb',
 });
 exports.r = r;
@@ -16,8 +16,8 @@ function init_database() {
     if (_.indexOf(tableNames, 'userdata') !== -1) {
       //pass
     } else {
-      return r.createTable('userdata').run().then(success => {
-        return r.table('userdata').createIndex(USER_TABLE_INDEX, [r.row('_user'), r.row('_tableName')]).run()
+      return r.tableCreate('userdata').run().then(success => {
+        return r.table('userdata').indexCreate(USER_TABLE_INDEX, [r.row('_user'), r.row('_tableName')]).run()
       })
     }
   }).catch(error => {
@@ -36,8 +36,6 @@ const stripeClient = makeStripeClient();
 
 exports.makeStripeClient = makeStripeClient;
 exports.stripeClient = stripeClient;
-exports.getRDBConnection = getRDBConnection;
-exports.runQuery = runQuery;
 
 const ServerUrl = process.env.SERVER_URL
   ? process.env.SERVER_URL

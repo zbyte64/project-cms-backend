@@ -1,14 +1,13 @@
-var _ = require('lodash');
-var express = require('express');
+const _ = require('lodash');
+const express = require('express');
+
+const {stripeClient} = require('./connections');
+const {emitEvent} = require('./integrations');
+const {authorize} = require('./auth/middleware');
+const {createUser, updateUser} = require('./models');
 
 
-var {stripeClient} = require('./connections');
-var {emitEvent} = require('./integrations');
-var {authorize} = require('./auth/middleware');
-var {createUser, updateUser} = require('./models');
-
-
-var stripePlan = process.env.STRIPE_PLAN;
+const stripePlan = process.env.STRIPE_PLAN;
 //var stripePrice = process.env.STRIPE_PRICE;
 
 var billing = express();
@@ -16,7 +15,7 @@ exports.billing = billing;
 billing.use(authorize);
 
 billing.post('/plan-signup', function(req, res) {
-  var stripeToken = req.data.stripeToken;
+  let stripeToken = req.data.stripeToken;
   console.log("charge", stripeToken);
   if (!stripeToken) {
     return res.status(400).json({
@@ -24,7 +23,7 @@ billing.post('/plan-signup', function(req, res) {
       message: 'No Stripe Token',
     });
   }
-  var email = stripeToken.email;
+  let email = stripeToken.email;
   if (!email) {
     return res.status(400).json({
       success: false,
@@ -76,4 +75,4 @@ billing.post('/plan-signup', function(req, res) {
       }
     }
   });
-}
+});

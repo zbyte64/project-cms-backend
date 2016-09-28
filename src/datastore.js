@@ -72,7 +72,7 @@ datastore.put('/:tableName', function(req, res) {
   r.table('userdata').insert(documents, options).run(pump_rdb_result(res));
 });
 
-datastore.delete('/:tableName', function(req, res) {
+datastore.del('/:tableName', function(req, res) {
   let keys = req.body;
   if (! _.isArray(keys)) {
     return res.send(400, "Endpoint only accepts an array of keys")
