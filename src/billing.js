@@ -4,7 +4,6 @@ const express = require('express');
 const {stripeClient} = require('./connections');
 const {emitEvent} = require('./integrations');
 const {authorize} = require('./auth/middleware');
-const {createUser, updateUser} = require('./models');
 
 
 const stripePlan = process.env.STRIPE_PLAN;
@@ -15,6 +14,13 @@ exports.billing = billing;
 billing.use(authorize);
 
 billing.post('/plan-signup', function(req, res) {
+  if (!req.user) {
+    return res.status(403).join({
+      success: false,
+      message: 'Must login first',
+    });
+  }
+  let user = req.user;
   let stripeToken = req.data.stripeToken;
   console.log("charge", stripeToken);
   if (!stripeToken) {
@@ -49,30 +55,14 @@ billing.post('/plan-signup', function(req, res) {
       console.log('Success! Customer with Stripe ID ' + id + ' just signed up!');
       emitEvent("stripe-success", {email, customerId: id});
       //charge success
-      //create paid user or upgrade user
-      if (req.user) {
-        //upgrade user
-        let userDoc = req.user;
-        userDoc.customer_id = customer_id;
-        updateUser(userDoc.id, userDoc)
-        return res.status(200).json({
-          success: true,
-          message: "Your account has been upgraded."
-        })
-      } else {
-        //create paid user
-        let userDoc = {
-          username: req.body.username,
-          email: req.body.email,
-          customer_id: customer_id,
-        }
-        //CONSIDER: do we need to send a verification email if they have paid?
-        createUser(userDoc)
-        return res.status(200).json({
-          success: true,
-          message: "Please check your email to set your password."
-        })
-      }
+      //upgrade user
+
+      user.stripe_customer_id = customer_id;
+      user.save();
+      return res.status(200).json({
+        success: true,
+        message: "Your account has been upgraded."
+      });
     }
   });
 });

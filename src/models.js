@@ -1,4 +1,4 @@
-var {r, ServerUrl} = require('./connections');
+var {User, ServerUrl} = require('./connections');
 var {sendMail} = require('./integrations');
 var {signedParams} = require('./util');
 var bip39 = require('bip39');
@@ -11,12 +11,24 @@ exports.generateHostname = generateHostname;
 
 
 function getUser(username) {
-  return r.table('users').filter({username}).limit(1).run().then(c => c.next());
+  return User.findAll({
+    where: {username},
+    limit: 1,
+  }).then(c => {
+    if (!c || !c.length) Promise.reject(new Error("User not found"))
+    return c[0]
+  });
 }
 exports.getUser = getUser;
 
 function getUserById(user_id) {
-  return r.table('users').get(user_id).run().then(x => x ? x : Promise.reject(new Error("User not found")))
+  return User.findAll({
+    where: {id: user_id},
+    limit: 1,
+  }).then(c => {
+    if (!c || !c.length) Promise.reject(new Error("User not found"))
+    return c[0]
+  });
 }
 exports.getUserById = getUserById;
 
@@ -25,9 +37,7 @@ function createUser(userDoc) {
   if (!userDoc.username) throw new Error("User document must specify a username");
   if (!userDoc.email) throw new Error("User document must specify an email")
   if (!userDoc.hostname) userDoc.hostname = generateHostname()
-  return r.table('users').insert([userDoc]).run().then(response => {
-    let userId = response.generated_keys[0];
-    let user = _.merge({id: userId}, userDoc);
+  return User.create(userDoc).then(user => {
     sendMail({
       email: user.email,
       action: 'newUser',
@@ -36,7 +46,7 @@ function createUser(userDoc) {
       }, user),
     });
     return user;
-  })
+  });
 }
 exports.createUser = createUser;
 

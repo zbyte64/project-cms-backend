@@ -3,7 +3,7 @@ var uuid5 = require("uuid5");
 var uuid = require("uuid");
 var _ = require('lodash');
 
-var {r, USER_TABLE_INDEX} = require('./connections');
+var {UserData} = require('./connections');
 var {authorize} = require('./auth/middleware');
 
 
@@ -31,19 +31,32 @@ datastore.get('/:tableName', function(req, res) {
 
   if (_.isArray(req.params.keys)) { //can params even allow an array?
     let ids = compute_ids_from_keys(userId, tableName, req.params.keys);
-    query = r.table('userdata').getAll(ids);
+    query = UserData.findAll({
+        where: {
+            id: {$in: ids}
+        }
+    });
   }
 
   if (req.params.key) {
     let id = compute_id_from_key(userId, tableName, req.params.key);
-    query = r.table('userdata').get(id);
+    query = UserData.findAll({
+        where: {
+            id: id
+        }
+    });
   }
 
   if (!query) {
-    query = r.table('userdata').getAll([userId, tableName], {index: USER_TABLE_INDEX});
+    query = UserData.findAll({
+        where: {
+            _user: userId,
+            _tableName: tableName,
+        }
+    });
   }
 
-  query.run(pump_rdb_result(res));
+  pump_query_result(query, res);
 });
 
 //id is deterministic from user id and document key
@@ -66,10 +79,12 @@ datastore.put('/:tableName', function(req, res) {
   });
 
   let options = {
-    conflict: "replace"
+    updateOnDuplicate: ["value"]
   }
 
-  r.table('userdata').insert(documents, options).run(pump_rdb_result(res));
+  query = UserData.bulkCreate(documents, options);
+
+  pump_query_result(query, res);
 });
 
 datastore.del('/:tableName', function(req, res) {
@@ -82,7 +97,11 @@ datastore.del('/:tableName', function(req, res) {
 
   let ids = compute_ids_from_keys(userId, tableName, keys);
 
-  r.table('userdata').getAll(ids).delete().run(pump_rdb_result(res));
+  query = UserData.destroy({
+    where: {
+      id: {$in: ids}
+  });
+  pump_query_result(query, res);
 });
 
 
@@ -96,22 +115,10 @@ function compute_ids_from_keys(userId, tableName, keys) {
   return _.map(keys, _.partial(compute_id_from_key, tableName, userId));
 }
 
-function pump_rdb_result(res) {
-  return function(error, cursor) {
-    if (error) {
-      res.send(new Error(error))
-    } else {
-      if (cursor.toArray) {
-        cursor.toArray(function(error2, result) {
-          if (error2) {
-            res.send(new Error(error2))
-          } else {
-            res.send(result)
-          }
-        });
-      } else {
-        res.send(cursor)
-      }
-    }
-  }
+function pump_query_result(query, res) {
+  return query.then(result => {
+    res.send(result);
+  }, error => {
+    res.send(new Error(error));
+  });
 }

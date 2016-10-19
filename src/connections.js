@@ -1,31 +1,36 @@
 const stripe = require('stripe');
-const _ = require('lodash')
+const _ = require('lodash');
+const Sequelize = require('sequelize');
+const sequelize = new Sequelize(process.env.DATABASE_URL);
 
-//TODO process.env configurable
-const r = require('rethinkdbdash')({
-  port: 28015,
-  host: 'rethinkdb',
+exports.sequelize = sequelize;
+
+var User = sequelize.define('user', {
+  id: { type: Sequelize.UUID, primaryKey: true },
+  username: { type: Sequelize.STRING, unique: true },
+  email: Sequelize.STRING,
+  password_hash: Sequelize.STRING,
+  hostname: { type: Sequelize.STRING, unique: true },
+  is_active: { type: Sequelize.BOOLEAN, allowNull: false, defaultValue: false},
+  email_confirmed: { type: Sequelize.BOOLEAN, allowNull: false, defaultValue: false},
+  stripe_customer_id: Sequelize.STRING,
 });
-exports.r = r;
 
-const USER_TABLE_INDEX = 'userAndTable';
-exports.USER_TABLE_INDEX = USER_TABLE_INDEX;
+var UserData = sequelize.define('userdata', {
+  id: { type: Sequelize.UUID, primaryKey: true },
+  _user: Sequelize.STRING,
+  _tableName: Sequelize.STRING,
+  key: Sequelize.STRING,
+  value: Sequelize.TEXT,
+}, {
+  indexes: [{
+    name: 'user_and_table',
+    fields: ['_user', '_tableName'],
+  }]
+});
 
-function init_database() {
-  return r.tableList().run().then(tableNames => {
-    if (_.indexOf(tableNames, 'userdata') !== -1) {
-      //pass
-    } else {
-      return r.tableCreate('userdata').run().then(success => {
-        return r.table('userdata').indexCreate(USER_TABLE_INDEX, [r.row('_user'), r.row('_tableName')]).run()
-      })
-    }
-  }).catch(error => {
-    console.log("Error initializing database:");
-    console.error(error);
-  });
-}
-init_database();
+exports.User = User;
+exports.UserData = UserData;
 
 function makeStripeClient() {
   //read credentials from environ

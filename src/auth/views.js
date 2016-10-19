@@ -5,7 +5,7 @@ const restify = require('restify');
 const {doHash} = require('../util');
 const {passport} = require('./common');
 const {authorize, signedUsername} = require('./middleware');
-const {getUser, createUser, generateResetUrl, generateActivateUrl, updateUser} = require('../models');
+const {getUser, createUser, generateResetUrl, generateActivateUrl} = require('../models');
 const {sendMail, emitEvent} = require('../integrations');
 const {formatHTML} = require('../html_formatter');
 
@@ -135,8 +135,9 @@ function setPassword(req, res, next) {
       console.log("new hash:", hash);
       user.password_hash = hash;
       user.email_confirmed = true;
+      user.is_active = true;
       console.log("push user:", user);
-      return updateUser(user.id, user).then(response => {
+      return user.save().then(response => {
         console.log("password saved", response);
         req.login(user, function(err) {
           if (err) {

@@ -1,6 +1,7 @@
-const {auth} = require('./auth/views')
-const {billing} = require('./billing')
-const {datastore} = require('./datastore')
+const {auth} = require('./auth/views');
+const {billing} = require('./billing');
+const {datastore} = require('./datastore');
+const {sequelize} = require('./connections');
 const express = require('express');
 const publisher = require('buildicus-publisher').app;
 
@@ -19,6 +20,9 @@ app.use('/billing', billing);
 app.use('/datastore', connectRestify(datastore));
 app.use('/project-cms', express.static(__dirname + '/../project-cms'));
 
-app.listen(8000, function () {
-  console.log('Backend listening on port 8000!');
+
+sequelize.sync().then(function () {
+  app.listen(8000, function () {
+    console.log('Backend listening on port 8000!');
+  });
 });

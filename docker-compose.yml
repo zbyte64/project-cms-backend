@@ -9,7 +9,7 @@ services:
     ports:
       - 8000
     links:
-      - rethinkdb
+      - postgresql
       - hoster
       - ipfs
     environment:
@@ -17,6 +17,7 @@ services:
       PORT: 8000
       SECRET: "foo"
       IPFS_API_URL: "http://ipfs:5001"
+      DATABASE_URL: "postgres://user:pass@postgresql:5432/dbname"
   hoster:
     build: project-hoster/hoster
     ports:
@@ -40,8 +41,8 @@ services:
       - hoster
     environment:
       PURGE_TOKEN: "foo"
-  rethinkdb:
-    image: rethinkdb
+  postgresql:
+    image: postgresql
   ipfs:
     image: ipfs/go-ipfs
     #build: https://github.com/ipfs/go-ipfs.git
