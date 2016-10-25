@@ -1,4 +1,4 @@
-Repackaged project-webinator backend bits to be a backend for project-cms.
+Backend bits for project-cms.
 
 
 Urls:
