@@ -50,11 +50,6 @@ function createUser(userDoc) {
 }
 exports.createUser = createUser;
 
-function updateUser(user_id, userDoc) {
-  return r.table('users').get(user_id).update(userDoc).run();
-}
-exports.updateUser = updateUser;
-
 //generates a signed url for reseting a password
 function generateResetUrl(username, ...args) {
   var q = signedParams({username}, ...args);

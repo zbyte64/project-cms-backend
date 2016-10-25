@@ -1,10 +1,10 @@
-var restify = require('restify');
-var uuid5 = require("uuid5");
-var uuid = require("uuid");
-var _ = require('lodash');
+const restify = require('restify');
+const uuid5 = require("uuid5");
+const uuid = require("uuid");
+const _ = require('lodash');
 
-var {UserData} = require('./connections');
-var {authorize} = require('./auth/middleware');
+const {UserData} = require('./connections');
+const {authorize} = require('./auth/middleware');
 
 
 var datastore = restify.createServer({

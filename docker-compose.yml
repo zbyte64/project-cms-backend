@@ -42,7 +42,11 @@ services:
     environment:
       PURGE_TOKEN: "foo"
   postgresql:
-    image: postgresql
+    image: postgres
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
+      POSTGRES_DB: dbname
   ipfs:
     image: ipfs/go-ipfs
     #build: https://github.com/ipfs/go-ipfs.git
