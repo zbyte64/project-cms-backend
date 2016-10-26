@@ -8,10 +8,6 @@ const bcrypt = require('bcryptjs');
 const _ = require('lodash');
 const mockStripe = require('./stripe_mock');
 
-//TODO signup
-//TODO site publish
-//TODO stripe payment
-//TODO datastore
 
 describe('CMS', () => {
   let user, token;
@@ -45,11 +41,7 @@ describe('CMS', () => {
     it('responds on signup url', (done) => {
       request(app)
         .get('/auth/signup')
-        .expect(200)
-        .end(function(err, res) {
-          if (err) throw err;
-          done();
-        });
+        .expect(200, done);
     });
   });
 
@@ -58,11 +50,7 @@ describe('CMS', () => {
       request(app)
         .post('/site/publish')
         .attach('/media/index.html', 'tests/fixtures/index.html')
-        .expect(403)
-        .end(function(err, res) {
-          if (err) throw err;
-          done();
-        });
+        .expect(403, done);
     });
 
     it('accepts a form for version uplishing', (done) => {
@@ -70,11 +58,15 @@ describe('CMS', () => {
         .post('/site/publish')
         .set('Authorization', token)
         .attach('/media/index.html', 'tests/fixtures/index.html')
-        .expect(200)
-        .end(function(err, res) {
-          if (err) throw err;
-          done();
-        });
+        .expect(200, {
+          Data: '\b\u0001',
+          Links:
+           [ { Name: '/media/index.html',
+               Size: 67,
+               Hash: 'QmYWBHGceRnSBqtDpVzYXSQ4Tv9AvYVbumWW5ZsEs4CHH3' } ],
+          Hash: 'QmW2aoxHBXhEUZKJDik5EaV9XAcMgZmsTcemR6bnMcGLgK',
+          Size: 130
+        }, done);
     });
   });
 
@@ -82,22 +74,14 @@ describe('CMS', () => {
     it('requires auth', (done) => {
       request(app)
         .get('/datastore/anamespace')
-        .expect(401)
-        .end(function(err, res) {
-          if (err) throw err;
-          done();
-        });
+        .expect(401, done);
     });
 
     it('returns a table listing', (done) => {
       request(app)
         .get('/datastore/anamespace')
         .set('Authorization', token)
-        .expect(200)
-        .end(function(err, res) {
-          if (err) throw err;
-          done();
-        });
+        .expect(200, [], done);
     });
   });
 
@@ -105,11 +89,7 @@ describe('CMS', () => {
     it('requires auth', (done) => {
       request(app)
         .post('/billing/plan-signup')
-        .expect(401)
-        .end(function(err, res) {
-          if (err) throw err;
-          done();
-        });
+        .expect(401, done);
     });
 
     it('plan signup accepts a stipe callback', (done) => {
@@ -122,11 +102,10 @@ describe('CMS', () => {
             id: 'foobar'
           }
         })
-        .expect(200)
-        .end(function(err, res) {
-          if (err) throw err;
-          done();
-        });
+        .expect(200, {
+          success: true,
+          message: "Your account has been upgraded."
+        }, done);
     });
   });
 
@@ -134,11 +113,7 @@ describe('CMS', () => {
     it('is hosted', () => {
       request(app)
         .get('/project-cms')
-        .expect(200)
-        .end(function(err, res) {
-          if (err) throw err;
-          done();
-        });
+        .expect(200, done);
     });
   });
 });

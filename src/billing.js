@@ -14,13 +14,13 @@ exports.billing = billing;
 billing.post('/plan-signup', function(req, res) {
   console.log("plan signup user:", req.user);
   if (!req.user) {
-    return res.status(401).json({
+    return res.status(401).send({
       success: false,
       message: 'Must login first',
     });
   }
   if (!req.body) {
-    return res.status(400).json({
+    return res.status(400).send({
       success: false,
       message: 'No Data',
     });
@@ -30,7 +30,7 @@ billing.post('/plan-signup', function(req, res) {
   let stripeToken = req.body.stripeToken;
   console.log("charge", stripeToken);
   if (!stripeToken || !stripeToken.id) {
-    return res.status(400).json({
+    return res.status(400).send({
       success: false,
       message: 'No Stripe Token',
     });
@@ -45,7 +45,7 @@ billing.post('/plan-signup', function(req, res) {
       console.log("Stripe Error:", err);
       emitEvent("stripe-error", {email, error: err});
       var msg = err.message || "unknown";
-      return res.status(500).json({
+      return res.status(500).send({
         success: false,
         message: "Error while processing your payment: " + msg
       });
@@ -61,8 +61,8 @@ billing.post('/plan-signup', function(req, res) {
       }, {
         fields: ['stripe_customer_id'],
         where: {id: user.id}
-      }).then(res => {
-        return res.status(200).json({
+    }).then(userUpdated => {
+        return res.status(200).send({
           success: true,
           message: "Your account has been upgraded."
         });
