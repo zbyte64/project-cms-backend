@@ -14,7 +14,7 @@ var app = express();
 app.use('/project-cms', express.static(__dirname + '/../project-cms'));
 
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded());
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use('/auth', auth);
 app.use('/site', authorize, publisher);
 app.use('/billing', authorize, billing);

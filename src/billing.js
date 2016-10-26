@@ -51,8 +51,8 @@ billing.post('/plan-signup', function(req, res) {
       });
     } else {
       let customer_id = customer.id;
-      console.log('Success! Customer with Stripe ID ' + id + ' just signed up!');
-      emitEvent("stripe-success", {email, customerId: id});
+      console.log('Success! Customer with Stripe ID ' + customer_id + ' just signed up!');
+      emitEvent("stripe-success", {email, customerId: customer_id});
       //charge success
       //upgrade user
 

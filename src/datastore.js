@@ -80,7 +80,7 @@ datastore.put('/:tableName', function(req, res) {
   pump_query_result(query, res);
 });
 
-datastore.del('/:tableName', function(req, res) {
+datastore.delete('/:tableName', function(req, res) {
   let keys = req.body;
   if (! _.isArray(keys)) {
     return res.send(400, "Endpoint only accepts an array of keys")

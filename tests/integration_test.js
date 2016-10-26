@@ -6,6 +6,7 @@ const request = require('supertest');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const _ = require('lodash');
+const mockStripe = require('./stripe_mock');
 
 //TODO signup
 //TODO site publish
@@ -57,7 +58,7 @@ describe('CMS', () => {
       request(app)
         .post('/site/publish')
         .attach('/media/index.html', 'tests/fixtures/index.html')
-        .expect(401)
+        .expect(403)
         .end(function(err, res) {
           if (err) throw err;
           done();
@@ -112,6 +113,7 @@ describe('CMS', () => {
     });
 
     it('plan signup accepts a stipe callback', (done) => {
+      mockStripe()
       request(app)
         .post('/billing/plan-signup')
         .set('Authorization', token)
