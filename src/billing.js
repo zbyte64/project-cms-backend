@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const express = require('express');
 
-const {stripeClient} = require('./connections');
+const {stripeClient, User} = require('./connections');
 const {emitEvent} = require('./integrations');
 
 
@@ -56,11 +56,18 @@ billing.post('/plan-signup', function(req, res) {
       //charge success
       //upgrade user
 
-      user.stripe_customer_id = customer_id;
-      user.save();
-      return res.status(200).json({
-        success: true,
-        message: "Your account has been upgraded."
+      User.update({
+        stripe_customer_id: customer_id
+      }, {
+        fields: ['stripe_customer_id'],
+        where: {id: user.id}
+      }).then(res => {
+        return res.status(200).json({
+          success: true,
+          message: "Your account has been upgraded."
+        });
+      }).catch(error => {
+        res.send(error);
       });
     }
   });

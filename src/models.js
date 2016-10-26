@@ -11,23 +11,19 @@ exports.generateHostname = generateHostname;
 
 
 function getUser(username) {
-  return User.findAll({
+  return User.findOne({
     where: {username},
-    limit: 1,
   }).then(c => {
-    if (!c || !c.length) Promise.reject(new Error("User not found"))
-    return c[0]
+    if (!c) Promise.reject(new Error("User not found"))
+    return c
   });
 }
 exports.getUser = getUser;
 
 function getUserById(user_id) {
-  return User.findAll({
-    where: {id: user_id},
-    limit: 1,
-  }).then(c => {
-    if (!c || !c.length) Promise.reject(new Error("User not found"))
-    return c[0]
+  return User.findById( user_id ).then(c => {
+    if (!c) Promise.reject(new Error("User not found"))
+    return c
   });
 }
 exports.getUserById = getUserById;
