@@ -1,21 +1,15 @@
 const _ = require('lodash');
 const flash = require('connect-flash');
-const restify = require('restify');
+const express = require('express');
 
 const {doHash} = require('../util');
 const {passport} = require('./common');
 const {authorize, signedUsername} = require('./middleware');
 const {getUser, createUser, generateResetUrl, generateActivateUrl} = require('../models');
 const {sendMail, emitEvent} = require('../integrations');
-const {formatHTML} = require('../html_formatter');
 
 
-var auth = restify.createServer({
-  name: 'auth',
-  formatters: {
-    'text/html': formatHTML
-  }
-});
+var auth = express();
 exports.auth = auth;
 
 auth.use(authorize);

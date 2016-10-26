@@ -4,18 +4,41 @@ const {sync, User} = require('../src/connections');
 const {createUser} = require('../src/models');
 const request = require('supertest');
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
+const _ = require('lodash');
 
 //TODO signup
 //TODO site publish
 //TODO stripe payment
 //TODO datastore
 
-describe('CMS', (done) => {
-  sync().then(() => {
-    //TODO create user
-    done()
+describe('CMS', () => {
+  let user, token;
+  beforeEach((done) => {
+    sync().then(() => {
+      user = {
+        id: '97e6afa2-f2da-43b5-98d1-26b13bd91073',
+        username: 'user',
+        hostname: 'foobar',
+        password_hash: bcrypt.hashSync('foobar', 10),
+        email: 'user@email.com',
+        is_active: true,
+        email_confirmed: true,
+      };
+      return User.upsert(user);
+    }).then((result) => {
+      token = 'Bearer ' + jwt.sign(_.pick(user, [
+        'id',
+        'username',
+        'email',
+        'hostname',
+      ]), process.env.SECRET);
+      done();
+    }).catch(error => {
+      console.error(error)
+      done(null, error);
+    });
   });
-  let token = 'Bearer ' + jwt.sign({hostname: 'hi'}, process.env.SECRET);
 
   describe('signup', () => {
     it('responds on signup url', (done) => {
@@ -92,6 +115,11 @@ describe('CMS', (done) => {
       request(app)
         .post('/billing/plan-signup')
         .set('Authorization', token)
+        .send({
+          stripeToken: {
+            id: 'foobar'
+          }
+        })
         .expect(200)
         .end(function(err, res) {
           if (err) throw err;

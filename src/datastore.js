@@ -1,16 +1,12 @@
-const restify = require('restify');
+const express = require('express');
 const uuid5 = require("uuid5");
 const uuid = require("uuid");
 const _ = require('lodash');
 
 const {UserData} = require('./connections');
-const {authorize} = require('./auth/middleware');
 
 
-var datastore = restify.createServer({
-  name: 'datastore'
-});
-datastore.use(authorize);
+var datastore = express();
 datastore.use(function(req, res, next) {
   if (!req.user) {
     res.send(401)
@@ -18,9 +14,6 @@ datastore.use(function(req, res, next) {
     next()
   }
 });
-datastore.use(restify.acceptParser(datastore.acceptable));
-datastore.use(restify.queryParser());
-datastore.use(restify.bodyParser());
 exports.datastore = datastore;
 
 

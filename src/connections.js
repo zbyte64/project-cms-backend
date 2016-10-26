@@ -1,13 +1,15 @@
 const stripe = require('stripe');
 const _ = require('lodash');
 const Sequelize = require('sequelize');
+const uuid = require('uuid');
 const syncPublisher = require('./publisher').sync;
 const sequelize = new Sequelize(process.env.DATABASE_URL);
+
 
 exports.sequelize = sequelize;
 
 var User = sequelize.define('user', {
-  id: { type: Sequelize.UUID, primaryKey: true },
+  id: { type: Sequelize.UUID, primaryKey: true, default: uuid.v4 },
   username: { type: Sequelize.STRING, unique: true },
   email: Sequelize.STRING,
   password_hash: Sequelize.STRING,

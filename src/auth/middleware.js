@@ -3,7 +3,7 @@ const querystring = require('querystring');
 const jwt = require('jsonwebtoken');
 const cookieSession = require("cookie-session");
 const cookieParser = require('cookie-parser');
-
+const jwtMiddleware = require('express-jwt');
 const {passport} = require('./common');
 
 
@@ -27,51 +27,70 @@ var sessionConfig = {
 var configuredSessionMiddleware = cookieSession(sessionConfig);
 */
 
-var sessionStore = cookieSession({
+const sessionStore = cookieSession({
   secret: process.env.SECRET,
   //httpOnly: false, //this allows javascript to read session info!
   cookie: {maxAge: 60 * 60}
 });
 
 
-var getUserData = function(userId) {
-    return new Promise(function(resolve, reject){
-      if (userId === null) {
-        //how does passport handle anonymous users?
-        return resolve(null);
-      }
-      passport.deserializeUser(userId, function(err, user) {
-          if (err) { return reject(err);}
-          if (!user) { return reject("User not found"); }
-          //only pass what is absolutely needed, must fit in cookie
-          resolve(user);
-      });
+function getUserData(userId) {
+  return new Promise(function(resolve, reject){
+    if (userId === null) {
+      //how does passport handle anonymous users?
+      return resolve(null);
+    }
+    passport.deserializeUser(userId, function(err, user) {
+        if (err) { return reject(err);}
+        if (!user) { return reject("User not found"); }
+        //only pass what is absolutely needed, must fit in cookie
+        resolve(user);
     });
+  });
 };
 
 
-var authMiddlewarez = [
+function chainMiddleware(...mfuncs) {
+  //wrap up a list of middleware as one middleware
+  return function(req, res, next) {
+    let _tick = 0;
+    function tick() {
+      if (_tick >= _.size(mfuncs)) {
+        next();
+      } else {
+        var mw = mfuncs[_tick];
+        _tick += 1;
+        mw(req, res, tick);
+      }
+    }
+    tick();
+  }
+}
+
+function varyByCookie(req, res, next) {
+  res.setHeader("Vary", "Cookie");
+  next();
+}
+
+const cookieAuthorize = chainMiddleware(
+  varyByCookie,
   cookieParser(),
   sessionStore,
   passport.initialize(),
-  passport.session(),
-];
+  passport.session()
+)
 
-//bundled authorize middleware, pipe user based views through this!
-function authorize(req, res, next) {
-  var _tick = 0;
-  res.setHeader("Vary", "Cookie"); //authorized views vary by cookie
-  function tick() {
-    if (_tick >= _.size(authMiddlewarez)) {
-      next();
-    } else {
-      var mw = authMiddlewarez[_tick];
-      _tick += 1;
-      mw(req, res, tick);
-    }
+const authorize = chainMiddleware(
+  jwtMiddleware({
+    secret: process.env.SECRET,
+    credentialsRequired: false,
+  }),
+  (req, res, next) => {
+    if (req.user) return next();
+    cookieAuthorize(req, res, next);
   }
-  tick();
-}
+)
+
 
 function signedToken(req, res, next) {
   /* Parse and validate token GET param */

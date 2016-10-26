@@ -3,7 +3,6 @@ const express = require('express');
 
 const {stripeClient} = require('./connections');
 const {emitEvent} = require('./integrations');
-const {authorize} = require('./auth/middleware');
 
 
 const stripePlan = process.env.STRIPE_PLAN;
@@ -11,30 +10,29 @@ const stripePlan = process.env.STRIPE_PLAN;
 
 var billing = express();
 exports.billing = billing;
-billing.use(authorize);
 
 billing.post('/plan-signup', function(req, res) {
-  console.log("plan signup user:", req.user, req.headers);
+  console.log("plan signup user:", req.user);
   if (!req.user) {
     return res.status(401).json({
       success: false,
       message: 'Must login first',
     });
   }
+  if (!req.body) {
+    return res.status(400).json({
+      success: false,
+      message: 'No Data',
+    });
+  }
   let user = req.user;
-  let stripeToken = req.data.stripeToken;
+  let email = user.email;
+  let stripeToken = req.body.stripeToken;
   console.log("charge", stripeToken);
-  if (!stripeToken) {
+  if (!stripeToken || !stripeToken.id) {
     return res.status(400).json({
       success: false,
       message: 'No Stripe Token',
-    });
-  }
-  let email = stripeToken.email;
-  if (!email) {
-    return res.status(400).json({
-      success: false,
-      message: 'No email sent with stripeToken'
     });
   }
 
