@@ -5,6 +5,7 @@ services:
     volumes:
       - "./src:/opt/app/src"
       - "./views:/opt/app/views"
+      - "./tests:/opt/app/tests"
       - "./project-cms:/opt/app/project-cms"
     ports:
       - 8000
@@ -13,10 +14,10 @@ services:
       - hoster
       - ipfs
     environment:
-      IS_DOCKER: 'TRUE'
       PORT: 8000
       SECRET: "foo"
       IPFS_API_URL: "http://ipfs:5001"
+      HOSTER_RPC_URL: "http://hoster:8100"
       DATABASE_URL: "postgres://user:pass@postgresql:5432/dbname"
   hoster:
     build: project-hoster/hoster

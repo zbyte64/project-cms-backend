@@ -1,10 +1,10 @@
-var _ = require('lodash');
-var querystring = require('querystring');
-var jwt = require('jsonwebtoken');
-var cookieSession = require("cookie-session");
-var cookieParser = require('cookie-parser');
+const _ = require('lodash');
+const querystring = require('querystring');
+const jwt = require('jsonwebtoken');
+const cookieSession = require("cookie-session");
+const cookieParser = require('cookie-parser');
 
-var {passport} = require('./common');
+const {passport} = require('./common');
 
 
 var PROVISIONAL = false; //ie dev is true

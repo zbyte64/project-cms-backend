@@ -14,8 +14,9 @@ exports.billing = billing;
 billing.use(authorize);
 
 billing.post('/plan-signup', function(req, res) {
+  console.log("plan signup user:", req.user, req.headers);
   if (!req.user) {
-    return res.status(403).join({
+    return res.status(401).json({
       success: false,
       message: 'Must login first',
     });

@@ -1,6 +1,9 @@
 Backend bits for project-cms.
 
 
+Testing: `docker-compose run app npm test`
+
+
 Urls:
 
 * **/project-cms - project-cms

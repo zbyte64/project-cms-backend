@@ -19,9 +19,12 @@ app.use('/site', publisher);
 app.use('/billing', billing);
 app.use('/datastore', connectRestify(datastore));
 app.use('/project-cms', express.static(__dirname + '/../project-cms'));
+exports.app = app;
 
-sync().then(function () {
-  app.listen(8000, function () {
-    console.log('Backend listening on port 8000!');
+if (require.main === module) {
+  sync().then(function () {
+    app.listen(8000, function () {
+      console.log('Backend listening on port 8000!');
+    });
   });
-});
+}

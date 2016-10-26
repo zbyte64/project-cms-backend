@@ -13,7 +13,7 @@ var datastore = restify.createServer({
 datastore.use(authorize);
 datastore.use(function(req, res, next) {
   if (!req.user) {
-    res.send(403, "Please login")
+    res.send(401)
   } else {
     next()
   }
@@ -100,6 +100,7 @@ datastore.del('/:tableName', function(req, res) {
   query = UserData.destroy({
     where: {
       id: {$in: ids}
+    }
   });
   pump_query_result(query, res);
 });
