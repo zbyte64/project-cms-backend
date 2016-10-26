@@ -24,8 +24,8 @@ function noCache(req, res, next) {
 
 
 auth.get('/self', function(req, res) {
-  var info = _.omit(req.user, 'password_hash', 'customer_id');
-  info.has_paid = req.user.customer_id ? true : false;
+  var info = _.omit(req.user, 'password_hash', 'stripe_customer_id');
+  info.has_paid = req.user.stripe_customer_id ? true : false;
   res.send(info);
 });
 

@@ -26,6 +26,12 @@ billing.post('/plan-signup', function(req, res) {
     });
   }
   let user = req.user;
+  if (user.stripe_customer_id) {
+    return res.status(400).send({
+      success: false,
+      message: 'Already have a stripe customer id',
+    });
+  }
   let email = user.email;
   let stripeToken = req.body.stripeToken;
   console.log("charge", stripeToken);

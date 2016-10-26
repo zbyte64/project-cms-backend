@@ -1,7 +1,6 @@
 const assert = require('assert');
 const {app} = require('../src/index');
 const {sync, User} = require('../src/connections');
-const {createUser} = require('../src/models');
 const request = require('supertest');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
@@ -21,6 +20,7 @@ describe('CMS', () => {
         email: 'user@email.com',
         is_active: true,
         email_confirmed: true,
+        stripe_customer_id: null,
       };
       return User.upsert(user);
     }).then((result) => {
@@ -42,6 +42,36 @@ describe('CMS', () => {
       request(app)
         .get('/auth/signup')
         .expect(200, done);
+    });
+
+    it('responds on login url', (done) => {
+      request(app)
+        .get('/auth/login')
+        .expect(200, done);
+    });
+
+    it('responds on logout url', (done) => {
+      request(app)
+        .get('/auth/logout')
+        .expect(302, done);
+    });
+
+    it('responds on forgot password', (done) => {
+      request(app)
+        .get('/auth/forgot-password')
+        .expect(200, done);
+    });
+
+    it('reset password requires signed url token', (done) => {
+      request(app)
+        .get('/auth/reset-password')
+        .expect(400, done);
+    });
+
+    it('activate requires signed url token', (done) => {
+      request(app)
+        .get('/auth/activate')
+        .expect(400, done);
     });
   });
 
