@@ -1,6 +1,7 @@
 const stripe = require('stripe');
 const _ = require('lodash');
 const Sequelize = require('sequelize');
+const syncPublisher = require('./publisher').sync;
 const sequelize = new Sequelize(process.env.DATABASE_URL);
 
 exports.sequelize = sequelize;
@@ -11,8 +12,8 @@ var User = sequelize.define('user', {
   email: Sequelize.STRING,
   password_hash: Sequelize.STRING,
   hostname: { type: Sequelize.STRING, unique: true },
-  is_active: { type: Sequelize.BOOLEAN, allowNull: false, defaultValue: false},
-  email_confirmed: { type: Sequelize.BOOLEAN, allowNull: false, defaultValue: false},
+  is_active: { type: Sequelize.BOOLEAN, allowNull: false, defaultValue: false },
+  email_confirmed: { type: Sequelize.BOOLEAN, allowNull: false, defaultValue: false },
   stripe_customer_id: Sequelize.STRING,
 });
 
@@ -46,3 +47,9 @@ const ServerUrl = process.env.SERVER_URL
   ? process.env.SERVER_URL
   : `http://${process.env.MAKER_PORT_8000_ADDR}:${process.env.MAKER_PORT_8000_PORT}`;
 exports.ServerUrl = ServerUrl;
+
+
+function sync() {
+  return Promise.all([sequelize.sync(), syncPublisher()]);
+}
+exports.sync = sync;
