@@ -41,7 +41,8 @@ describe('CMS', () => {
     it('responds on signup url', (done) => {
       request(app)
         .get('/auth/signup')
-        .expect(200, done);
+        .set('Accept', 'text/html')
+        .expect(200, "", done);
     });
 
     it('responds on login url', (done) => {
@@ -122,11 +123,12 @@ describe('CMS', () => {
         .expect(401, done);
     });
 
-    it('plan signup accepts a stipe callback', (done) => {
+    it('plan signup accepts a stripe callback', (done) => {
       mockStripe()
       request(app)
         .post('/billing/plan-signup')
         .set('Authorization', token)
+        .set('Accept', 'application/json')
         .send({
           stripeToken: {
             id: 'foobar'

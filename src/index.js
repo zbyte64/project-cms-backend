@@ -7,19 +7,23 @@ const {publisher} = require('./publisher');
 const contentNegotiatedSendMiddleware = require('./send_negotiated_response');
 const express = require('express');
 const bodyParser = require('body-parser');
-const expressNunjucks = require('express-nunjucks');
+const nunjucks = require('nunjucks');
 
 
 //console.log("apps:", auth, publisher, billing, datastore);
 const app = express();
 const isDev = app.get('env') === 'development';
 
-app.set('views', __dirname + '../views');
+//app.set('views', __dirname + '../views');
 
-const njk = expressNunjucks(app, {
-    watch: isDev,
-    noCache: isDev
+nunjucks.configure(__dirname + '../views/', {
+  autoescape: true,
+  express: app
 });
+//console.log("FOOOOBARERRRR", app.get('view'))
+app.set('view engine', 'nunjucks');
+app.set('defaultEngine', 'nunjucks')
+app.engine('html', app.get('view'));
 
 app.use('/project-cms', express.static(__dirname + '/../project-cms'));
 app.use('/site', authorize, publisher);

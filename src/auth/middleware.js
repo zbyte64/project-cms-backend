@@ -68,7 +68,7 @@ function chainMiddleware(...mfuncs) {
 }
 
 function varyByCookie(req, res, next) {
-  res.setHeader("Vary", "Cookie");
+  res.vary("Cookie");
   next();
 }
 
