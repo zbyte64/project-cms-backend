@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
-    "test": "./node_modules/mocha/bin/mocha ./tests"
+    "test": "./node_modules/mocha/bin/mocha ./tests/**"
   },
   "author": "Jason Kraus",
   "license": "MIT",
