@@ -11,9 +11,11 @@ exports.sequelize = sequelize;
 var User = sequelize.define('user', {
   id: { type: Sequelize.UUID, primaryKey: true, default: uuid.v4 },
   username: { type: Sequelize.STRING, unique: true },
+  fullname: Sequelize.STRING,
   email: Sequelize.STRING,
   password_hash: Sequelize.STRING,
   hostname: { type: Sequelize.STRING, unique: true },
+  accept_tos: { type: Sequelize.BOOLEAN, allowNull: false, defaultValue: false },
   is_active: { type: Sequelize.BOOLEAN, allowNull: false, defaultValue: false },
   email_confirmed: { type: Sequelize.BOOLEAN, allowNull: false, defaultValue: false },
   stripe_customer_id: Sequelize.STRING,

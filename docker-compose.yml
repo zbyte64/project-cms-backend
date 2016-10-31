@@ -5,6 +5,7 @@ services:
     volumes:
       - "./src:/opt/app/src"
       - "./views:/opt/app/views"
+      - "./media:/opt/app/media"
       - "./tests:/opt/app/tests"
       - "./project-cms:/opt/app/project-cms"
     ports:
@@ -14,11 +15,13 @@ services:
       - hoster
       - ipfs
     environment:
+      NODE_ENV: "development"
       PORT: 8000
       SECRET: "foo"
       IPFS_API_URL: "http://ipfs:5001"
       HOSTER_RPC_URL: "http://hoster:8100"
       DATABASE_URL: "postgres://user:pass@postgresql:5432/dbname"
+    command: ./run.sh
   hoster:
     build: project-hoster/hoster
     ports:
@@ -34,6 +37,7 @@ services:
       LANDING_URL: "https://example.com"
       REDIRECT_PROTOCOL: "http"
       DOMAIN_NAME: "hosted.com"
+    command: ./run.sh
   cacher:
     build: project-hoster/cacher
     ports:

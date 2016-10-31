@@ -4,8 +4,9 @@ const express = require('express');
 
 const {doHash} = require('../util');
 const {passport} = require('./common');
+const {validateRegistrationSchema, validateForgotPasswordSchema, validateResetPasswordSchema} = require('./schemas');
 const {authorize, signedUsername} = require('./middleware');
-const {getUser, createUser, generateResetUrl, generateActivateUrl} = require('../models');
+const {getUser, createActiveUser, generateResetUrl, generateActivateUrl} = require('../models');
 const {sendMail, emitEvent} = require('../integrations');
 
 
@@ -22,6 +23,22 @@ function noCache(req, res, next) {
   next();
 }
 
+function flashError(req) {
+  let error = req.flash('error');
+  if (error && error.length) return error;
+  return null;
+}
+
+function flashContext(req) {
+  let error = req.flash('error');
+  let success = req.flash('success');
+  let context = {};
+  if (error && error.length) context.errors = error;
+  if (success && success.length) context.message = success;
+  req.session.flash = [];
+  return context;
+}
+
 
 auth.get('/self', function(req, res) {
   var info = _.omit(req.user, 'password_hash', 'stripe_customer_id');
@@ -30,7 +47,7 @@ auth.get('/self', function(req, res) {
 });
 
 auth.get('/login', function(req, res) {
-  res.send({errors: req.flash('error')});
+  res.send(flashContext(req));
 });
 
 auth.post('/login',
@@ -47,51 +64,38 @@ auth.get('/logout', function(req, res) {
 });
 
 auth.get('/signup', function(req, res) {
-  res.send({errors: req.flash('error')});
+  res.send(flashContext(req));
 });
 
-//pumps to footer signup
 auth.post('/signup', function(req, res) {
-  if (!req.body.first_name) {
-    req.flash('error', 'first name is required');
+  validateRegistrationSchema(req.body).then(params => {
+    sendMail({
+      email: params.email,
+      action: 'signup',
+      properties: _.merge(params, {
+        url: generateActivateUrl(params)
+      }),
+    });
+    //display check your email
+    req.flash('success', 'check your email');
     return res.redirect('/auth/signup');
-  }
-  //if (!req.body.last_name) return res.status(400).send('last_name is required');
-  if (!req.body.email) {
-    req.flash('error', 'email is required');
+  }, validationError => {
+    req.flash('error', validationError.toString());
     return res.redirect('/auth/signup');
-  }
-  //if (!req.body.template) return res.status(400).send('template is required');
-
-  var params = _.pick(req.body, ['first_name', 'last_name', 'email']);
-
-  //signed url for /auth/footer-activate
-  sendMail({
-    email: req.body.email,
-    action: 'signup',
-    properties: _.merge(params, {
-      url: generateActivateUrl(params)
-    }),
   });
-  //display check your email
-  res.send({message: 'check your email', success: true});
 });
 
 
 auth.get('/forgot-password', function(req, res) {
-  res.send({errors: req.flash('error')});
-  req.session.flash = [];
+  res.send(flashContext(req));
 });
 
 auth.post('/forgot-password', function(req, res) {
-  if (!req.body || !req.body.username) {
-    req.flash('error', 'Username is required');
-    res.redirect('/auth/forgot-password');
-    return;
-  }
-  console.log("forgot password for:", req.body.username);
+  validateForgotPasswordSchema(req.body).then(params => {
+    console.log("forgot password for:", params.username);
 
-  getUser(req.body.username).then(user => {
+    return getUser(params.username)
+  }).then(user => {
     console.log("found user:", user);
     var url = generateResetUrl(user.username);
     console.log("password reset requested:", url);
@@ -101,102 +105,61 @@ auth.post('/forgot-password', function(req, res) {
       properties: {
         url: url
       }
-    }).then(info => {
-      req.flash('success', 'Check your email');
-      res.redirect('/auth/forgot-password');
-      console.log("sent link to set password");
-    }, error => {
-      req.flash('error', 'Error sending email: '+error);
-      res.redirect('/auth/forgot-password');
     });
-  }, error => {
-    req.flash('error', 'Invalid Username');
+  }).then(info => {
+    req.flash('success', 'Check your email');
+    res.redirect('/auth/forgot-password');
+    console.log("sent link to set password");
+  }).catch(error => {
+    req.flash('error', error.toString());
     res.redirect('/auth/forgot-password');
   });
 });
 
 
-
-//meh
-function setPassword(req, res, next) {
-  if (!req.body || !req.body.password) return res.sendStatus(400);
-  var password = req.body.password;
-  var username = req.tokenParams.username;
-
-  return getUser(username).then(user => {
-    console.log("setting user password:", username);
-    return doHash(password).then(hash => {
-      console.log("new hash:", hash);
-      user.password_hash = hash;
-      user.email_confirmed = true;
-      user.is_active = true;
-      console.log("push user:", user);
-      return user.save().then(response => {
-        console.log("password saved", response);
-        req.login(user, function(err) {
-          if (err) {
-            console.error("Could not login")
-            console.error(err);
-            //res.status(500).send(err)
-            return;
-          }
-          emitEvent('login', {email:user.email});
-          next();
-        });
-        return user;
-      }, error => {
-        console.error("Could not save password")
-        console.error(error)
-        res.status(500).send(err)
-      });
-    });
-  }, notFound => {
-    res.status(400);
-  });
-}
-
-function setPasswordWithEvent(eventName) {
-  return function(req, res, next) {
-    setPassword(req, res, next).then(user => {
-      emitEvent(eventName, {email:user.email});
-    });
-  }
-}
-
-//activate == reset but with different templates
-
 auth.get('/activate', signedUsername, function(req, res) {
-  res.send({
-    username: req.query.username,
-    errors: req.flash('error'),
+  createActiveUser(req.tokenParams).then(user => {
+    req.login(user, function(err) {
+      if (err) {
+        console.error("Could not login")
+        console.error(err);
+        req.flash('error', err.toString());
+        res.redirect('/auth/login');
+        return;
+      }
+      emitEvent('login', {email:user.email});
+      res.redirect('/');
+    });
+  }, error => {
+    req.flash('error', err.toString());
+    res.redirect('/auth/login');
   });
 });
 
-auth.post('/activate', signedUsername, function(req, res, next) {
-    if (!req.body || !req.body.password || req.body.password !== req.body.password_confirm) {
-      req.flash('error', 'Passwords do not match')
-      res.redirect('/auth'+req.url);
-    } else {
-      next();
-    }
-  }, setPasswordWithEvent('account-activated'), function(req, res) {
-    res.redirect('/');
-});
 
 auth.get('/reset-password', signedUsername, function(req, res) {
-  res.send({
-    username: req.tokenParams.username,
-    messages: req.flash('error'),
-  });
+  let context = flashContext(req);
+  context.username = req.tokenParams.username;
+  res.send(context);
 });
 
 auth.post('/reset-password', signedUsername, function(req, res, next) {
-    if (!req.body || !req.body.password || req.body.password !== req.body.password_confirm) {
-      req.flash('error', 'Passwords do not match')
-      res.redirect('/auth'+req.url);
-    } else {
-      next();
-    }
-  }, setPasswordWithEvent('reset-password-success'), function(req, res) {
-    res.redirect('/');
+  let foundUser;
+  return validateResetPasswordSchema(req.body).then(params => {
+    let userPromise = getUser(req.tokenParams.username);
+    let pwPromise = doHash(params.password);
+    return Promise.all([userPromise, pwPromise])
+  }).then(([user, password_hash]) => {
+    foundUser = user;
+    user.email_confirmed = true;
+    user.password_hash = password_hash;
+    return user.save();
+  }).then(() => {
+    req.flash('success', 'password set');
+    res.redirect('/auth/login');
+    emitEvent('password-reset', {email: foundUser.email});
+  }).catch(error => {
+    req.flash('error', error.toString());
+    res.redirect('/auth/reset-password');
+  });
 });

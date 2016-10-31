@@ -1,7 +1,7 @@
-var {User, ServerUrl} = require('./connections');
-var {sendMail} = require('./integrations');
-var {signedParams} = require('./util');
-var bip39 = require('bip39');
+const {User, ServerUrl} = require('./connections');
+const {sendMail} = require('./integrations');
+const {signedParams} = require('./util');
+const bip39 = require('bip39');
 
 
 function generateHostname() {
@@ -14,7 +14,7 @@ function getUser(username) {
   return User.findOne({
     where: {username},
   }).then(c => {
-    if (!c) Promise.reject(new Error("User not found"))
+    if (!c) return Promise.reject(new Error("User not found"))
     return c
   });
 }
@@ -22,7 +22,7 @@ exports.getUser = getUser;
 
 function getUserById(user_id) {
   return User.findById( user_id ).then(c => {
-    if (!c) Promise.reject(new Error("User not found"))
+    if (!c) return Promise.reject(new Error("User not found"))
     return c
   });
 }
@@ -30,9 +30,9 @@ exports.getUserById = getUserById;
 
 function createUser(userDoc) {
   //TODO use joi for validation?
-  if (!userDoc.username) throw new Error("User document must specify a username");
-  if (!userDoc.email) throw new Error("User document must specify an email")
-  if (!userDoc.hostname) userDoc.hostname = generateHostname()
+  if (!userDoc.email) throw new Error("User document must specify an email");
+  if (!userDoc.username) userDoc.username = userDoc.email;
+  if (!userDoc.hostname) userDoc.hostname = generateHostname();
   return User.create(userDoc).then(user => {
     sendMail({
       email: user.email,
@@ -46,6 +46,17 @@ function createUser(userDoc) {
 }
 exports.createUser = createUser;
 
+function createActiveUser(userDoc) {
+  //TODO use joi for validation?
+  if (!userDoc.email) throw new Error("User document must specify an email");
+  if (!userDoc.password_hash) throw new Error("Active user document must specify a password hash");
+  if (!userDoc.username) userDoc.username = userDoc.email;
+  if (!userDoc.hostname) userDoc.hostname = generateHostname();
+  userDoc.is_active = true;
+  userDoc.email_confirmed = true;
+  return User.create(userDoc);
+}
+
 //generates a signed url for reseting a password
 function generateResetUrl(username, ...args) {
   var q = signedParams({username}, ...args);
@@ -53,9 +64,9 @@ function generateResetUrl(username, ...args) {
 }
 exports.generateResetUrl = generateResetUrl;
 
-//generates a signed url for activating
-function generateActivateUrl(username, ...args) {
-  var q = signedParams({username}, ...args);
+//generates a signed url for activating, params become user fields
+function generateActivateUrl(params, ...args) {
+  var q = signedParams(params, ...args);
   return `${ServerUrl}/auth/activate?${q}`;
 }
 exports.generateActivateUrl = generateActivateUrl;

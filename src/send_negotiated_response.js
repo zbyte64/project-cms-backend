@@ -5,8 +5,12 @@ const path = require('path');
 
 
 const env = new nunjucks.Environment(
-  new nunjucks.FileSystemLoader(path.resolve(__dirname, '../views/')),
-  { autoescape: false }
+  new nunjucks.FileSystemLoader(path.resolve(__dirname, '../views/'), {
+    noCache: process.env.NODE_ENV == "development",
+  }),
+  {
+    autoescape: false,
+  }
 );
 
 

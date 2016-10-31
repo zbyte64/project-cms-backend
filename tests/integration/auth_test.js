@@ -17,13 +17,20 @@ describe('auth', () => {
       request(app)
         .get('/auth/signup')
         .set('Accept', 'text/html')
-        .expect(200, "", done);
+        .expect(200, done);
     });
 
     it('responds on login url', (done) => {
       request(app)
         .get('/auth/login')
         .expect(200, done);
+    });
+
+    it('login rejects invalid password username combo', (done) => {
+      request(app)
+        .post('/auth/login')
+        .send({username: 'doesnotexist', password: 'password'})
+        .expect(302, done);
     });
 
     it('responds on logout url', (done) => {

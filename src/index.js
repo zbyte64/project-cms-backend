@@ -19,7 +19,8 @@ const isDev = app.get('env') === 'development';
 
 nunjucks.configure(path.resolve(__dirname, '../views/'), {
   autoescape: true,
-  express: app
+  express: app,
+  noCache: isDev,
 });
 
 app.set('view engine', 'nunjucks');
@@ -39,6 +40,7 @@ app.get('/project-cms/', function(req, res) {
   res.render('project-cms/index.html', context);
 });
 
+app.use('/media', express.static(__dirname + '/../media'));
 app.use('/project-cms', express.static(__dirname + '/../project-cms'));
 app.use('/site', authorize, publisher);
 
