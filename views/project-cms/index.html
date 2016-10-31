@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8"/>
+	<meta name="viewport" content="width=device-width, initial-scale=1"/>
+	<title>CMS System</title>
+		<script src="./jspm_packages/system.src.js"></script>
+	<script src="./config.js"></script>
+	<script>
+	window.addEventListener("message", receiveMessage, false);
+
+	function receiveMessage(event)
+	{
+	  var origin = event.origin || event.originalEvent.origin; // For Chrome, the origin property is in the event.originalEvent object.
+		console.log("receiveMessage:", origin, window.location.protocol+"//"+window.location.host)
+	  if (origin !== window.location.protocol+"//"+window.location.host)
+	    return;
+
+		try {
+			var message = JSON.parse(event.data)
+			if (message && message.type === "APPLICATION_STATE") {
+				if (message.text === true) {
+					$("#opening_screen").hide()
+				} else {
+					$("#opening_screen").text(message.text);
+				}
+			}
+		} catch (error) {
+			//
+			console.log(error)
+			console.log(event.data)
+		}
+	}
+		System.import('./src/app.jsx').then(x => x.default({
+            'services': {
+                'database': {module: '~/services/buildicus'},
+                'hosting': {module: '~/services/buildicus'},
+            }
+        }));
+	</script>
+
+	<!-- Latest compiled and minified CSS -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+
+	<!-- Optional theme -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
+
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+
+	<!-- Latest compiled and minified JavaScript -->
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+
+	<link rel="stylesheet" href="./jspm_packages/npm/codemirror@5.11.0/lib/codemirror.css">
+
+	<style>
+	.CodeMirror {
+		height: auto;
+		border: 1px solid #DDD;
+	}
+
+	#opening_screen {
+
+	}
+	</style>
+</head>
+<body>
+	<div id="opening_screen">boot strapping...</div>
+	<div id="app"></div>
+</body>
+</html>
