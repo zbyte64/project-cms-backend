@@ -8,7 +8,6 @@ var jwt = require('jsonwebtoken');
 function doHash(password) {
   return new Promise(function(resolve, reject) {
     bcrypt.hash(password, 10, function(err, hash) {
-      console.log("hash response", arguments, password)
       if (err) {
         reject(err);
       } else {
@@ -23,8 +22,6 @@ exports.doHash = doHash;
 var DEFAULT_EXPIRATION = '3 days';
 function signedParams(params, expiresIn=DEFAULT_EXPIRATION, secret=process.env.SECRET) {
   return new Promise(function(resolve, reject) {
-    console.log("generating hash of:", params);
-
     jwt.sign(params, secret, {
       expiresIn: expiresIn
     }, function(err, token) {

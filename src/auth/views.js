@@ -82,6 +82,7 @@ auth.post('/signup', function(req, res) {
     return res.redirect('/auth/signup');
   }).catch(error => {
     req.flash('error', error.toString());
+    res.set('flash-error', error.toString());
     return res.redirect('/auth/signup');
   });
 });
@@ -114,6 +115,7 @@ auth.post('/forgot-password', function(req, res) {
     console.log("sent link to set password");
   }).catch(error => {
     req.flash('error', error.toString());
+    res.set('flash-error', error.toString());
     res.redirect('/auth/forgot-password');
   });
 });

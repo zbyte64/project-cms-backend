@@ -38,13 +38,13 @@ describe('auth', () => {
           email: 'foobar@email.com',
           fullname: 'foo bar',
           password: 'foobar',
-          accept_tos: true,
+          agree_tos: true,
         })
         .expect(302)
         .end(function(err, res) {
           if (err) throw err;
-          assert(sendMailEvent, JSON.stringify(res.headers));
-          done(); //TODO check events
+          assert(sendMailEvent, res.headers['flash-error']);
+          done();
         });
     });
 
@@ -68,6 +68,7 @@ describe('auth', () => {
         .expect(302)
         .end(function(err, res) {
           if (err) throw err;
+          assert.equal(res.headers.location, "/")
           done();
         });
     });
@@ -85,10 +86,20 @@ describe('auth', () => {
     });
 
     it('forgot password looks up by username', (done) => {
+      let sendMailEvent;
+      events.once('sendMail-forgotPassword', event => {
+        sendMailEvent = event;
+      });
+
       request(app)
         .post('/auth/forgot-password')
         .send({username: 'user'})
-        .expect(302, done);
+        .expect(302)
+        .end(function(err, res) {
+          if (err) throw err;
+          assert(sendMailEvent, res.headers['flash-error']);
+          done();
+        });
     });
 
     it('reset password requires signed url token', (done) => {
