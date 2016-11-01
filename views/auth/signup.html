@@ -9,9 +9,9 @@
 	<!-- Main Form -->
 	<div class="login-form-1">
 		<form id="register-form" class="text-left" method="POST">
-            {% if message %}
+            {% if success %}
             <div class="login-form-main-message show success">
-                <p>{{message}}</p>
+                <p>{{success}}</p>
             </div>
             {% endif %}
             {% if error %}
