@@ -3,7 +3,7 @@ const querystring = require('querystring');
 const jwt = require('jsonwebtoken');
 const cookieSession = require("cookie-session");
 const cookieParser = require('cookie-parser');
-const jwtMiddleware = require('express-jwt');
+const JwtMiddleware = require('express-jwt');
 const {passport} = require('./common');
 
 
@@ -29,7 +29,7 @@ var configuredSessionMiddleware = cookieSession(sessionConfig);
 
 const sessionStore = cookieSession({
   secret: process.env.SECRET,
-  //httpOnly: false, //this allows javascript to read session info!
+  httpOnly: false, //this allows javascript to read session info!
   cookie: {maxAge: 60 * 60}
 });
 
@@ -74,22 +74,23 @@ function varyByCookie(req, res, next) {
 
 const cookieAuthorize = chainMiddleware(
   varyByCookie,
-  cookieParser(),
+  //cookieParser(),
   sessionStore,
   passport.initialize(),
   passport.session()
 )
 
-const authorize = chainMiddleware(
-  jwtMiddleware({
-    secret: process.env.SECRET,
-    credentialsRequired: false,
-  }),
-  (req, res, next) => {
-    if (req.user) return next();
+const jwtMiddleware = JwtMiddleware({
+  secret: process.env.SECRET,
+});
+
+function authorize(req, res, next) {
+  if (req.get('Authorization')) {
+    jwtMiddleware(req, res, next);
+  } else {
     cookieAuthorize(req, res, next);
   }
-)
+}
 
 
 function signedToken(req, res, next) {

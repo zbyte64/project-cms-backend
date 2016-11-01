@@ -9,9 +9,9 @@
 	<!-- Main Form -->
 	<div class="login-form-1">
 		<form id="login-form" class="text-left" method="POST">
-            {% if errors %}
+            {% if error %}
             <div class="login-form-main-message show error">
-                {% for error in errors %}<p>{{ error }}</p>{% endfor %}
+                <p>{{ error }}</p>
             </div>
             {% endif %}
 			<div class="main-login-form">

@@ -18,6 +18,7 @@ const registrationSchema = Joi.object().keys({
   email: Joi.string().email().required(),
   fullname: Joi.string().min(3).max(60).required(),
   password: Joi.string().min(6).required(),
+  password_confirm: Joi.any().required().valid(Joi.ref('password')),
   agree_tos: Joi.boolean().required(),
 });
 
@@ -27,6 +28,7 @@ exports.validateRegistrationSchema = function(value, options) {
     return doHash(registrationForm.password).then(password_hash => {
       registrationForm.password_hash = password_hash;
       delete registrationForm.password;
+      delete registrationForm.password_confirm;
       return registrationForm;
     })
   });

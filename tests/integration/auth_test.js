@@ -38,6 +38,7 @@ describe('auth', () => {
           email: 'foobar@email.com',
           fullname: 'foo bar',
           password: 'foobar',
+          password_confirm: 'foobar',
           agree_tos: true,
         })
         .expect(302)

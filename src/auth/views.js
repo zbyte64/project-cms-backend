@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const flash = require('connect-flash');
+const flash = require('req-flash');
 const express = require('express');
 
 const {doHash} = require('../util');
@@ -23,19 +23,9 @@ function noCache(req, res, next) {
   next();
 }
 
-function flashError(req) {
-  let error = req.flash('error');
-  if (error && error.length) return error;
-  return null;
-}
 
 function flashContext(req) {
-  let error = req.flash('error');
-  let success = req.flash('success');
-  let context = {};
-  if (error && error.length) context.errors = error;
-  if (success && success.length) context.message = success;
-  req.session.flash = [];
+  let context = req.flash();
   return context;
 }
 
