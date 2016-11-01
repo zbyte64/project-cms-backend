@@ -1,15 +1,21 @@
 const {app} = require('../../src/index');
+const {events} = require('../../src/integrations');
 const userFixture = require('../user_fixture');
+const assert = require('assert');
 const request = require('supertest');
 
 
 describe('auth', () => {
-  let user, token;
+  let token;
   beforeEach((done) => {
     userFixture().then(atoken => {
       token = atoken;
       done();
     });
+  });
+
+  afterEach(() => {
+    events.removeAllListeners();
   });
 
   describe('views', () => {
@@ -18,6 +24,28 @@ describe('auth', () => {
         .get('/auth/signup')
         .set('Accept', 'text/html')
         .expect(200, done);
+    });
+
+    it('signup sends activation email', (done) => {
+      let sendMailEvent;
+      events.once('sendMail-signup', event => {
+        sendMailEvent = event;
+      });
+
+      request(app)
+        .post('/auth/signup')
+        .send({
+          email: 'foobar@email.com',
+          fullname: 'foo bar',
+          password: 'foobar',
+          accept_tos: true,
+        })
+        .expect(302)
+        .end(function(err, res) {
+          if (err) throw err;
+          assert(sendMailEvent, JSON.stringify(res.headers));
+          done(); //TODO check events
+        });
     });
 
     it('responds on login url', (done) => {
@@ -33,6 +61,17 @@ describe('auth', () => {
         .expect(302, done);
     });
 
+    it('login accepts valid credentials', (done) => {
+      request(app)
+        .post('/auth/login')
+        .send({ username: 'user', password: 'foobar' })
+        .expect(302)
+        .end(function(err, res) {
+          if (err) throw err;
+          done();
+        });
+    });
+
     it('responds on logout url', (done) => {
       request(app)
         .get('/auth/logout')
@@ -43,6 +82,13 @@ describe('auth', () => {
       request(app)
         .get('/auth/forgot-password')
         .expect(200, done);
+    });
+
+    it('forgot password looks up by username', (done) => {
+      request(app)
+        .post('/auth/forgot-password')
+        .send({username: 'user'})
+        .expect(302, done);
     });
 
     it('reset password requires signed url token', (done) => {

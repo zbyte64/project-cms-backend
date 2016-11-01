@@ -69,18 +69,19 @@ auth.get('/signup', function(req, res) {
 
 auth.post('/signup', function(req, res) {
   validateRegistrationSchema(req.body).then(params => {
-    sendMail({
-      email: params.email,
-      action: 'signup',
-      properties: _.merge(params, {
-        url: generateActivateUrl(params)
-      }),
+    return generateActivateUrl(params).then(url => {
+      return sendMail({
+        email: params.email,
+        action: 'signup',
+        properties: _.merge(params, { url }),
+      });
     });
+  }).then(() => {
     //display check your email
     req.flash('success', 'check your email');
     return res.redirect('/auth/signup');
-  }, validationError => {
-    req.flash('error', validationError.toString());
+  }).catch(error => {
+    req.flash('error', error.toString());
     return res.redirect('/auth/signup');
   });
 });
@@ -96,15 +97,16 @@ auth.post('/forgot-password', function(req, res) {
 
     return getUser(params.username)
   }).then(user => {
-    console.log("found user:", user);
-    var url = generateResetUrl(user.username);
-    console.log("password reset requested:", url);
-    return sendMail({
-      email: user.email,
-      action: 'forgotPassword',
-      properties: {
-        url: url
-      }
+    //console.log("found user:", user);
+    return generateResetUrl(user.username).then(url => {
+      console.log("password reset requested:", url);
+      return sendMail({
+        email: user.email,
+        action: 'forgotPassword',
+        properties: {
+          url: url
+        }
+      });
     });
   }).then(info => {
     req.flash('success', 'Check your email');

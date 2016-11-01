@@ -20,13 +20,20 @@ function doHash(password) {
 exports.doHash = doHash;
 
 
-var DEFAULT_EXPIRATION = 60*24*3; //3 Days
+var DEFAULT_EXPIRATION = '3 days';
 function signedParams(params, expiresIn=DEFAULT_EXPIRATION, secret=process.env.SECRET) {
-  console.log("generating hash of:", params);
+  return new Promise(function(resolve, reject) {
+    console.log("generating hash of:", params);
 
-  var token = jwt.sign(params, secret, {
-    expiresInMinutes: expiresIn
+    jwt.sign(params, secret, {
+      expiresIn: expiresIn
+    }, function(err, token) {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(querystring.encode({ token }));
+      }
+    });
   });
-  return querystring.encode({token});
 }
 exports.signedParams = signedParams;

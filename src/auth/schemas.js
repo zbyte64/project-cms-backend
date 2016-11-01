@@ -14,6 +14,7 @@ function validationFactory(schema, value, options) {
 }
 
 const registrationSchema = Joi.object().keys({
+  username: Joi.string().min(6).max(40),
   email: Joi.string().email().required(),
   fullname: Joi.string().min(3).max(60).required(),
   password: Joi.string().min(6).required(),

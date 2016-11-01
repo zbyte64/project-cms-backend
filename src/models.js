@@ -59,14 +59,14 @@ function createActiveUser(userDoc) {
 
 //generates a signed url for reseting a password
 function generateResetUrl(username, ...args) {
-  var q = signedParams({username}, ...args);
-  return `${ServerUrl}/auth/reset-password?${q}`;
+  return signedParams({username}, ...args)
+    .then(q => `${ServerUrl}/auth/reset-password?${q}`)
 }
 exports.generateResetUrl = generateResetUrl;
 
 //generates a signed url for activating, params become user fields
 function generateActivateUrl(params, ...args) {
-  var q = signedParams(params, ...args);
-  return `${ServerUrl}/auth/activate?${q}`;
+  return signedParams(params, ...args)
+    .then(q =>`${ServerUrl}/auth/activate?${q}`);
 }
 exports.generateActivateUrl = generateActivateUrl;
