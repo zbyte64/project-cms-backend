@@ -56,6 +56,7 @@ function createActiveUser(userDoc) {
   userDoc.email_confirmed = true;
   return User.create(userDoc);
 }
+exports.createActiveUser = createActiveUser;
 
 //generates a signed url for reseting a password
 function generateResetUrl(username, ...args) {

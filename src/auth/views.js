@@ -60,6 +60,7 @@ auth.get('/signup', function(req, res) {
 auth.post('/signup', function(req, res) {
   validateRegistrationSchema(req.body).then(params => {
     return generateActivateUrl(params).then(url => {
+      console.log("Sending activation email:", params.email, url);
       return sendMail({
         email: params.email,
         action: 'signup',
@@ -90,7 +91,7 @@ auth.post('/forgot-password', function(req, res) {
   }).then(user => {
     //console.log("found user:", user);
     return generateResetUrl(user.username).then(url => {
-      console.log("password reset requested:", url);
+      console.log("password reset requested:", user.email, url);
       return sendMail({
         email: user.email,
         action: 'forgotPassword',
@@ -118,14 +119,16 @@ auth.get('/activate', signedUsername, function(req, res) {
         console.error("Could not login")
         console.error(err);
         req.flash('error', err.toString());
+        res.set('flash-error', error.toString());
         res.redirect('/auth/login');
         return;
       }
-      emitEvent('login', {email:user.email});
+      emitEvent('login', { email: user.email });
       res.redirect('/');
     });
   }, error => {
-    req.flash('error', err.toString());
+    req.flash('error', error.toString());
+    res.set('flash-error', error.toString());
     res.redirect('/auth/login');
   });
 });
@@ -151,9 +154,10 @@ auth.post('/reset-password', signedUsername, function(req, res, next) {
   }).then(() => {
     req.flash('success', 'password set');
     res.redirect('/auth/login');
-    emitEvent('password-reset', {email: foundUser.email});
+    emitEvent('password-reset', { email: foundUser.email });
   }).catch(error => {
     req.flash('error', error.toString());
+    res.set('flash-error', error.toString());
     res.redirect('/auth/reset-password');
   });
 });

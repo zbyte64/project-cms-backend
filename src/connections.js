@@ -9,7 +9,7 @@ const sequelize = new Sequelize(process.env.DATABASE_URL);
 exports.sequelize = sequelize;
 
 var User = sequelize.define('user', {
-  id: { type: Sequelize.UUID, primaryKey: true, default: uuid.v4 },
+  id: { type: Sequelize.UUID, primaryKey: true, defaultValue: uuid.v4 },
   username: { type: Sequelize.STRING, unique: true },
   fullname: Sequelize.STRING,
   email: Sequelize.STRING,

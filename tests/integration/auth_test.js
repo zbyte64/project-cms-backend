@@ -1,5 +1,7 @@
 const {app} = require('../../src/index');
 const {events} = require('../../src/integrations');
+const {generateResetUrl, generateActivateUrl, getUser} = require('../../src/models');
+const {User} = require('../../src/connections');
 const userFixture = require('../user_fixture');
 const assert = require('assert');
 const request = require('supertest');
@@ -18,8 +20,8 @@ describe('auth', () => {
     events.removeAllListeners();
   });
 
-  describe('views', () => {
-    it('responds on signup url', (done) => {
+  describe('signup', () => {
+    it('responds with html', (done) => {
       request(app)
         .get('/auth/signup')
         .set('Accept', 'text/html')
@@ -48,10 +50,13 @@ describe('auth', () => {
           done();
         });
     });
+  });
 
-    it('responds on login url', (done) => {
+  describe('login', () => {
+    it('responds with html', (done) => {
       request(app)
         .get('/auth/login')
+        .set('Accept', 'text/html')
         .expect(200, done);
     });
 
@@ -73,16 +78,26 @@ describe('auth', () => {
           done();
         });
     });
+  });
 
-    it('responds on logout url', (done) => {
+  describe('logout', () => {
+    it('redirects to login', (done) => {
       request(app)
         .get('/auth/logout')
-        .expect(302, done);
+        .expect(302)
+        .end((err, res) => {
+          if (err) return done(err);
+          assert.equal(res.headers.location, '/auth/login');
+          done();
+        });
     });
+  });
 
-    it('responds on forgot password', (done) => {
+  describe('forgot password', () => {
+    it('responds with html', (done) => {
       request(app)
         .get('/auth/forgot-password')
+        .set('Accept', 'text/html')
         .expect(200, done);
     });
 
@@ -102,17 +117,60 @@ describe('auth', () => {
           done();
         });
     });
+  });
 
-    it('reset password requires signed url token', (done) => {
+  describe('reset password', () => {
+    it('requires signed url token', (done) => {
       request(app)
         .get('/auth/reset-password')
         .expect(400, done);
     });
 
-    it('activate requires signed url token', (done) => {
+    it('renders html', (done) => {
+      generateResetUrl('user').then(url => {
+        let queryParams = url.split('?')[1];
+        request(app)
+          .get('/auth/reset-password?'+queryParams)
+          .set('Accept', 'text/html')
+          .expect(200, done);
+      }, done);
+    });
+  });
+
+  describe('activate', () => {
+    beforeEach(() => {
+      return User.destroy({
+        where: {username: 'activeuser'}
+      });
+    });
+
+    it('requires signed url token', (done) => {
       request(app)
         .get('/auth/activate')
         .expect(400, done);
+    });
+
+    it('creates active user', (done) => {
+      generateActivateUrl({
+        username: 'activeuser',
+        password_hash: 'meh',
+        email: 'activeuser@email.com',
+      }).then(url => {
+        let queryParams = url.split('?')[1];
+        request(app)
+          .get('/auth/activate?'+queryParams)
+          .expect(302)
+          .end(function(err, res) {
+            if (err) return done(err);
+            if (res.headers['flash-error']) {
+              assert.fail(res.headers['flash-error'])
+            }
+            assert.equal(res.headers.location, '/');
+            getUser('activeuser').then(user => {
+              done();
+            }, done);
+          });
+      }, done);
     });
   });
 });
