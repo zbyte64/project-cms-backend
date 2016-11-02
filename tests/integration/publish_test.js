@@ -12,27 +12,58 @@ describe('CMS', () => {
     });
   });
 
+  describe('upload', () => {
+    it('requires auth', (done) => {
+      request(app)
+        .post('/site/upload')
+        .attach('/media/image.jpg', 'tests/fixtures/image.jpg')
+        .expect(403, done);
+    });
+
+    it('accepts a multipart form for uploading', (done) => {
+      request(app)
+        .post('/site/upload')
+        .set('Authorization', token)
+        .attach('/media/image.jpg', 'tests/fixtures/image.jpg')
+        .expect(200, {
+          "/media/image.jpg": {
+            "path":"QmS9LhDFbfCkue34sp1bBQedtpesrUAyA7pkjZENYbKtNf",
+            "hash":"QmS9LhDFbfCkue34sp1bBQedtpesrUAyA7pkjZENYbKtNf",
+            "size":11253
+          }
+        }, done);
+    });
+  });
+
   describe('publish', () => {
     it('requires auth', (done) => {
       request(app)
         .post('/site/publish')
-        .attach('/media/index.html', 'tests/fixtures/index.html')
+        .attach('index.html', 'tests/fixtures/index.html')
         .expect(403, done);
     });
 
-    it('accepts a form for version uplishing', (done) => {
+    it('accepts a multipart form for version publishing', (done) => {
       request(app)
         .post('/site/publish')
         .set('Authorization', token)
-        .attach('/media/index.html', 'tests/fixtures/index.html')
+        .attach('index.html', 'tests/fixtures/index.html')
         .expect(200, {
           Data: '\b\u0001',
-          Links:
-           [ { Name: '/media/index.html',
-               Size: 67,
-               Hash: 'QmYWBHGceRnSBqtDpVzYXSQ4Tv9AvYVbumWW5ZsEs4CHH3' } ],
-          Hash: 'QmW2aoxHBXhEUZKJDik5EaV9XAcMgZmsTcemR6bnMcGLgK',
-          Size: 130
+          Links: [
+            {
+              "Hash": "QmS9LhDFbfCkue34sp1bBQedtpesrUAyA7pkjZENYbKtNf",
+              "Name": "/media/image.jpg",
+              "Size": 11253
+            },
+            {
+              Name: 'index.html',
+              Size: 67,
+              Hash: 'QmYWBHGceRnSBqtDpVzYXSQ4Tv9AvYVbumWW5ZsEs4CHH3'
+            }
+          ],
+          Hash: 'QmR5kRx53BJme5G2wuGUsR4uve7DQz7hKh5cqMxk3VF2bM',
+          Size: 11435
         }, done);
     });
   });
