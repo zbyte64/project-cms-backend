@@ -138,7 +138,7 @@ describe('auth', () => {
   });
 
   describe('activate', () => {
-    beforeEach(() => {
+    before(() => {
       return User.destroy({
         where: {username: 'activeuser'}
       });

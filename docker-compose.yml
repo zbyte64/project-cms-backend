@@ -11,7 +11,7 @@ services:
     ports:
       - 8000:8000
     links:
-      - postgresql
+      - mysql
       - hoster
       - ipfs
     environment:
@@ -20,7 +20,7 @@ services:
       SECRET: "foo"
       IPFS_API_URL: "http://ipfs:5001"
       HOSTER_RPC_URL: "http://hoster:8100"
-      DATABASE_URL: "postgres://user:pass@postgresql:5432/dbname"
+      DATABASE_URL: "mysql://user:pass@mysql:3306/dbname"
     command: ./run.sh
   hoster:
     build: project-hoster/hoster
@@ -46,12 +46,13 @@ services:
       - hoster
     environment:
       PURGE_TOKEN: "foo"
-  postgresql:
-    image: postgres
+  mysql:
+    image: mysql
     environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: pass
-      POSTGRES_DB: dbname
+      MYSQL_RANDOM_ROOT_PASSWORD: "yes"
+      MYSQL_USER: user
+      MYSQL_PASSWORD: pass
+      MYSQL_DATABASE: dbname
   ipfs:
     image: ipfs/go-ipfs
     #build: https://github.com/ipfs/go-ipfs.git

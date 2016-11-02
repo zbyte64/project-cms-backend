@@ -21,6 +21,7 @@
     "joi": "^9.2.0",
     "jsonwebtoken": "^7.1.9",
     "lodash": "^4.15.0",
+    "mysql": "^2.11.1",
     "nunjucks": "^2.5.2",
     "passport": "^0.3.2",
     "passport-local": "^1.0.0",

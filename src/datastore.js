@@ -11,6 +11,9 @@ datastore.use(function(req, res, next) {
   if (!req.user) {
     res.send(401)
   } else {
+    //disable caching
+    res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+    res.setHeader("Expires", "0");
     next()
   }
 });
@@ -72,12 +75,16 @@ datastore.put('/:tableName', function(req, res) {
   });
 
   let options = {
-    updateOnDuplicate: ["value"]
+    updateOnDuplicate: ["value"],
   }
 
   query = UserData.bulkCreate(documents, options);
 
-  pump_query_result(query, res);
+  query.then(() => {
+    res.send({});
+  }, error => {
+    res.send(error);
+  });
 });
 
 datastore.delete('/:tableName', function(req, res) {
@@ -106,13 +113,17 @@ function compute_id_from_key(userId, tableName, key) {
 }
 
 function compute_ids_from_keys(userId, tableName, keys) {
-  return _.map(keys, _.partial(compute_id_from_key, tableName, userId));
+  return _.map(keys, _.partial(compute_id_from_key, userId, tableName));
 }
 
 function pump_query_result(query, res) {
   return query.then(result => {
-    res.send(result);
+    res.status(200).send(_.map(result, pruneToKeyValue));
   }, error => {
     res.send(new Error(error));
   });
+}
+
+function pruneToKeyValue(obj) {
+  return { key: obj.key, value: obj.value }
 }
