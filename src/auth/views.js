@@ -1,5 +1,4 @@
 const _ = require('lodash');
-const flash = require('req-flash');
 const express = require('express');
 
 const {doHash} = require('../util');
@@ -14,7 +13,6 @@ var auth = express();
 exports.auth = auth;
 
 auth.use(authorize);
-auth.use(flash());
 auth.use(noCache);
 
 function noCache(req, res, next) {
@@ -31,9 +29,13 @@ function flashContext(req) {
 
 
 auth.get('/self', function(req, res) {
-  var info = _.omit(req.user, 'password_hash', 'stripe_customer_id');
-  info.has_paid = req.user.stripe_customer_id ? true : false;
-  res.send(info);
+  let user = req.user;
+  if (!user) {
+    return res.json(null);
+  }
+  let info = _.omit(user, ['password_hash', 'stripe_customer_id']);
+  info.has_paid = user.stripe_customer_id ? true : false;
+  res.json(info);
 });
 
 auth.get('/login', function(req, res) {

@@ -18,12 +18,7 @@ module.exports = function() {
     };
     return User.upsert(user);
   }).then((result) => {
-    return 'Bearer ' + jwt.sign(_.pick(user, [
-      'id',
-      'username',
-      'email',
-      'hostname',
-    ]), process.env.SECRET);
+    return 'Bearer ' + jwt.sign(user, process.env.SECRET);
   }).catch(error => {
     console.error(error);
     return Promise.reject(error);

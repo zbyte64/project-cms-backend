@@ -1,6 +1,7 @@
 const _ = require('lodash');
 const querystring = require('querystring');
 const jwt = require('jsonwebtoken');
+const flash = require('req-flash');
 const cookieSession = require("cookie-session");
 const cookieParser = require('cookie-parser');
 const JwtMiddleware = require('express-jwt');
@@ -77,7 +78,8 @@ const cookieAuthorize = chainMiddleware(
   //cookieParser(),
   sessionStore,
   passport.initialize(),
-  passport.session()
+  passport.session(),
+  flash()
 )
 
 const jwtMiddleware = JwtMiddleware({
@@ -86,6 +88,7 @@ const jwtMiddleware = JwtMiddleware({
 
 function authorize(req, res, next) {
   if (req.get('Authorization')) {
+    //TODO enable session table for jwt
     jwtMiddleware(req, res, next);
   } else {
     cookieAuthorize(req, res, next);

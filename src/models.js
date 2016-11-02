@@ -5,7 +5,7 @@ const bip39 = require('bip39');
 
 
 function generateHostname() {
-  return bip39.generateMnemonic(32).replace(' ', '-');
+  return bip39.generateMnemonic(32).replace(/\s/g, '-');
 }
 exports.generateHostname = generateHostname;
 
@@ -13,6 +13,7 @@ exports.generateHostname = generateHostname;
 function getUser(username) {
   return User.findOne({
     where: {username},
+    raw: true,
   }).then(c => {
     if (!c) return Promise.reject(new Error("User not found"))
     return c
@@ -21,7 +22,7 @@ function getUser(username) {
 exports.getUser = getUser;
 
 function getUserById(user_id) {
-  return User.findById( user_id ).then(c => {
+  return User.findById( user_id, { raw: true } ).then(c => {
     if (!c) return Promise.reject(new Error("User not found"))
     return c
   });

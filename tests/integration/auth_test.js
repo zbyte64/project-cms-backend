@@ -5,6 +5,7 @@ const {User} = require('../../src/connections');
 const userFixture = require('../user_fixture');
 const assert = require('assert');
 const request = require('supertest');
+const _ = require('lodash');
 
 
 describe('auth', () => {
@@ -18,6 +19,30 @@ describe('auth', () => {
 
   afterEach(() => {
     events.removeAllListeners();
+  });
+
+  describe('self', () => {
+    it('responds with null for anonymous users', (done) => {
+      request(app)
+        .get('/auth/self')
+        .expect(200, null, done);
+    });
+
+    it('responds with user info without sensitive info', (done) => {
+      request(app)
+        .get('/auth/self')
+        .set('Authorization', token)
+        .expect(200)
+        .end((err, res) => {
+          if (err) return done(err);
+          let userInfo = res.body;
+          assert(userInfo);
+          assert(_.isUndefined(userInfo.password_hash));
+          assert(_.isUndefined(userInfo.stripe_customer_id));
+          assert(userInfo.id);
+          done();
+        });
+    });
   });
 
   describe('signup', () => {
@@ -167,8 +192,9 @@ describe('auth', () => {
             }
             assert.equal(res.headers.location, '/');
             getUser('activeuser').then(user => {
+              assert.equal(user.hostname.indexOf(' '), -1, "hostname contains a space");
               done();
-            }, done);
+            }).catch(done);
           });
       }, done);
     });
