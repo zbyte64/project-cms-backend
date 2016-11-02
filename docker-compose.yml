@@ -8,6 +8,7 @@ services:
       - "./media:/opt/app/media"
       - "./tests:/opt/app/tests"
       - "./project-cms:/opt/app/project-cms"
+      - "./project-cms-tests:/opt/app/project-cms-tests"
     ports:
       - 8000:8000
     links:
