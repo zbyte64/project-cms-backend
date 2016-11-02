@@ -3,4 +3,4 @@
 	url = git@github.com:zbyte64/project-cms.git
 [submodule "project-hoster"]
 	path = project-hoster
-	url = git@github.com:Montage-Inc/project-hoster.git
+	url = git@github.com:zbyte64/project-hoster.git
