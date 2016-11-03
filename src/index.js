@@ -39,7 +39,8 @@ app.get('/project-cms/', authorize, function(req, res) {
 });
 
 app.use('/media', express.static(__dirname + '/../media'));
-app.use('/project-cms/test', express.static(__dirname + '/../project-cms-tests'));
+app.use('/project-cms/src/mods', express.static(__dirname + '/../cms-mods'))
+app.use('/project-cms/test', express.static(__dirname + '/../cms-tests'));
 app.use('/project-cms', express.static(__dirname + '/../project-cms'));
 app.use('/site', authorize, publisher);
 

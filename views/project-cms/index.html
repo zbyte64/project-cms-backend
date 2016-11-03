@@ -32,6 +32,21 @@
 		}
 	}
 		System.import('./src/app.jsx').then(x => x.default({
+      //default apps:
+            'tables': { '/engine': { 'appsConfig': { 'apps': [
+              {baseUrl: '/', type: 'builtin', location: '~/mods/dashboard/index'},
+              {baseUrl: '/engine', type: 'builtin', location: '~/apps/engine/index'},
+              {baseUrl: '/site', type: 'builtin', location: '~/apps/site/index'},
+              {baseUrl: '/pages', type: 'builtin', location: '~/apps/pages/index'},
+              {baseUrl: '/galleries', type: 'builtin', location: '~/apps/galleries/index'},
+              {baseUrl: '/templates', type: 'builtin', location: '~/apps/templates/index'},
+              {baseUrl: '/media', type: 'builtin', location: '~/apps/media/index'},
+              {baseUrl: '/media/links', type: 'builtin', location: '~/apps/media/contrib/links/index'},
+              {baseUrl: '/media/assets', type: 'builtin', location: '~/apps/media/contrib/assets/index'},
+              {baseUrl: '/media/pictures', type: 'builtin', location: '~/apps/media/contrib/pictures/index'},
+              {baseUrl: '/snippets', type: 'builtin', location: '~/apps/snippets/index'},
+              {baseUrl: '/snippets/warehouse', type: 'builtin', location: '~/apps/snippets/contrib/warehouse/index'},
+            ]}}},
             'services': {
                 'database': {module: '~/services/buildicus'},
                 'hosting': {module: '~/services/buildicus'},
