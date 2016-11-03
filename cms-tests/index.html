@@ -6,11 +6,12 @@
 	<title>Tests</title>
 		<script src="../jspm_packages/system.src.js"></script>
 	<script src="../config.js"></script>
-	<script>
+	<script defer>
 		System.import('./index.js').then(module => {
       module.default([
         //'./appsLoader_test.js',
         './datastore_test.js',
+        './upload_test.js',
       ]);
     });
 	</script>

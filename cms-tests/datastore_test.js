@@ -40,7 +40,6 @@ describe("backend datastore", function() {
 
     describe("readTable", function() {
       it("returns all values for a table", function() {
-        console.log("hello")
         return getStorage().readTable("$test").then(key_values => {
           assert.deepEqual(key_values, { key: {
             id: "key",

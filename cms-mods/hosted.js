@@ -167,26 +167,30 @@ function futch(url, opts={}, onProgress) {
 
 
 export function upload(config, files, overwrite, onProgress) {
-  //TODO overwrite, implement or ditch (if not overwrite then generate uuid name)
   let formData = new FormData();
-  files.foreach(file => {
+  let pathToFile = {};
+  files.forEach(file => {
     let path = file.path;
-    if (!path) {
+    //if overwrite is not specified we must ensure we have a unique path
+    //CONSIDER: overwrite should always be accompanied with path
+    if (!path || !overwrite) {
       let id = v4();
       let extension = _.last(file.name.split('.'));
       path = `/media/${id}.${extension}`;
     }
+    pathToFile[path] = file;
     formData.append(path, file, file.name);
   });
   return futch('/site/upload', {
     method: 'POST',
     body: formData,
   }, onProgress).then(responseText => {
-    //response = [{path, hash, size}]
+    //response = {uploadPath: {path, hash, size}}
     let response = JSON.parse(responseText);
-    return response.map((value, index) => {
-      let file = files[index];
+    return _.map(response, (value, path) => {
+      let file = pathToFile[path];
       return _.assign(value, {
+        path: path,
         name: file.name,
         type: file.type,
       });
@@ -194,12 +198,12 @@ export function upload(config, files, overwrite, onProgress) {
   });
 }
 
-export function uploaderFactory(config) {
+export function uploaderFactory(config={}) {
   return _.partial(upload, config);
 }
 
 
-export function publisherFactory(config) {
+export function publisherFactory(config={}) {
   let formData = new FormData();
   let result;
 

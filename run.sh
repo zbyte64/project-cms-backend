@@ -7,7 +7,7 @@ until nc -v -z hoster 8100; do echo Waiting for Hoster; sleep 1; done
 
 if [ "$NODE_ENV" = "development" ]
 then
-    node_modules/nodemon/bin/nodemon.js src/index.js
+    node_modules/nodemon/bin/nodemon.js --ignore cms-mods --ignore cms-tests src/index.js
 else
     npm start
 fi

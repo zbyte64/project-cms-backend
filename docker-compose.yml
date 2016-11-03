@@ -48,6 +48,8 @@ services:
       - hoster
     environment:
       PURGE_TOKEN: "foo"
+    logging:
+      driver: none
   mysql:
     image: mysql
     environment:
