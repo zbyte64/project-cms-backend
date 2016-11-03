@@ -1,7 +1,7 @@
 import assert from 'assert';
 import {Map} from 'immutable';
 import {getStorage, destroy, setStorage} from '~/reducers/tables';
-import {datastoreFactory} from '~/services/buildicus';
+import {datastoreFactory} from '~/mods/hosted';
 
 
 describe("backend datastore", function() {
@@ -28,7 +28,7 @@ describe("backend datastore", function() {
   describe("datastore multiplexer", function() {
     describe("setStorage", function() {
       it("constructs Levelup Multiplexer", function() {
-        return setStorage({ module: "~/services/buildicus" })
+        return setStorage({ module: "~/mods/hosted" })
       });
     });
 
