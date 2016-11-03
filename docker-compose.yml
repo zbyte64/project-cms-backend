@@ -38,7 +38,7 @@ services:
       IPFS_GATEWAY_URL: "http://ipfs:8080"
       LANDING_URL: "https://example.com"
       REDIRECT_PROTOCOL: "http"
-      DOMAIN_NAME: "hosted.com"
+      DOMAIN_NAME: "localhost"
     command: ./run.sh
   cacher:
     build: project-hoster/cacher
