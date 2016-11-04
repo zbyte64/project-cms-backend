@@ -1,14 +1,14 @@
 import assert from 'assert';
 import {Map} from 'immutable';
 import {Buffer} from 'buffer';
-import {uploaderFactory, publisherFactory} from '~/mods/hosted';
+import {publisherFactory} from '~/mods/hosted';
 
 
 describe("backend upload", function() {
   describe("uploaderFactory", function() {
     let uploader;
     it("returns uploader", function() {
-      uploader = uploaderFactory();
+      uploader = publisherFactory().uploader;
       assert(uploader);
     });
 
@@ -39,7 +39,7 @@ describe("backend upload", function() {
     let publisher;
 
     it("returns publisher", function() {
-      publisher = publisherFactory();
+      publisher = publisherFactory().publisher();
       assert(publisher);
       assert(publisher.pushContent);
       assert(publisher.done);

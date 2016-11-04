@@ -6,7 +6,7 @@ import {AbstractLevelDOWN, AbstractIterator} from 'abstract-leveldown';
 import {v4} from 'node-uuid';
 
 
-export class BuildicusIterator extends AbstractIterator {
+export class HostedIterator extends AbstractIterator {
   constructor(db, options) {
     super(db);
     this._items = [];
@@ -41,7 +41,7 @@ export class BuildicusIterator extends AbstractIterator {
 }
 
 
-export class BuildicusDOWN extends AbstractLevelDOWN {
+export class HostedDOWN extends AbstractLevelDOWN {
   constructor(location) {
     super(location);
     this._tableName = location;
@@ -118,22 +118,22 @@ export class BuildicusDOWN extends AbstractLevelDOWN {
   }
 
   _iterator(options) {
-    return new BuildicusIterator(this, options);
+    return new HostedIterator(this, options);
   }
 }
 
-export class BuildicusStorage {
+export class HostedStorage {
   constructor() {
     //pass
   }
 
   identifier() {
-    return "buildicus:cms";
+    return "hosted:cms";
   }
 
   getTable = (baseUrl) => {
     let table_key = encodeURIComponent(baseUrl);
-    let db = (location) => new BuildicusDOWN(location);
+    let db = (location) => new HostedDOWN(location);
     let options = { db: db, valueEncoding: "json" };
     return levelup(table_key, options);
   }
@@ -146,7 +146,7 @@ export class BuildicusStorage {
 }
 
 export function datastoreFactory() {
-  return new BuildicusStorage();
+  return new HostedStorage();
 };
 
 
@@ -176,6 +176,13 @@ export function upload(config, files, overwrite, onProgress) {
     if (!path || !overwrite) {
       let id = v4();
       let extension = _.last(file.name.split('.'));
+      //CONSIDER: path is unavailable until we publish
+      //we can instead push an /ipfs/objectid as path
+      //or we need a url tag to translate media uri to url
+      // {% "ipfs:objectid"|url %} => to get accessible url
+      // ? url could trigger a retrieval & upload ?
+      // url in preview mode would resolve to /ipfs/objectid
+      // url in publish mode would resolve to /media/path
       path = `/media/${id}.${extension}`;
     }
     pathToFile[path] = file;
@@ -198,17 +205,12 @@ export function upload(config, files, overwrite, onProgress) {
   });
 }
 
-export function uploaderFactory(config={}) {
-  return _.partial(upload, config);
-}
 
-
-export function publisherFactory(config={}) {
+export function publish(config={}) {
   let formData = new FormData();
   let result;
 
   //TODO use a multipart stream buffer
-  //TODO support this in core
   function done() {
     return futch('/site/publish', {
       method: 'POST',
@@ -239,4 +241,22 @@ export function publisherFactory(config={}) {
     view,
     done
   }
+}
+
+function resolve(environment, token) {
+  switch(environment) {
+    case 'preview':
+      return `/ipfs/${token.hash}`;
+    case 'publish':
+    default:
+      return token.path;
+  }
+}
+
+export function publisherFactory(config={}) {
+  return {
+    resolver: resolve,
+    uploader: _.partial(upload, config),
+    publisher: _.partial(publish, config),
+  };
 }
